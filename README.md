@@ -1,6 +1,12 @@
 # MoeGallery
 An android gallery to view anime images from online resources
 
+[![Download Status](https://img.shields.io/github/downloads/kurumi-moe/MoeGallery/v1.1.0/total.svg)](https://github.com/kurumi-moe/MoeGallery/releases/download/v1.1.0/MoeGallery-v1.1.0.apk)
+
+##WARNING
+
+**Persons under 18 years of age using this application must be accompanied by an adult.**
+
 ##Supported sites 
 
 [https://yande.re](https://yande.re)
