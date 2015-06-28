@@ -12,6 +12,8 @@ public final class Providers {
     public static final String ANIME_PICTURES_URI = "https://anime-pictures.net";
     public static final String GELBOORU_URI = "http://gelbooru.com";
 
+    public static final String GITHUB_API_URI = "https://api.github.com";
+
     public static final String SCHEME_HTTPS = "https://";
     public static final String SCHEME_HTTP = "http://";
 

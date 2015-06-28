@@ -10,6 +10,10 @@ import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.sharedpreferences.Pref;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import moe.kurumi.moegallery.R;
 import moe.kurumi.moegallery.activity.MainActivity;
 import moe.kurumi.moegallery.model.AnimePictures;
@@ -25,10 +29,6 @@ import moe.kurumi.moegallery.model.database.FavoriteImage;
 import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
 import moe.kurumi.moegallery.model.database.HistoryImage;
 import moe.kurumi.moegallery.model.database.HistoryImage$Table;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import retrofit.RestAdapter;
 import retrofit.converter.SimpleXMLConverter;
 
@@ -66,7 +66,7 @@ public class ImageProvider implements ImageProviderBase<Image> {
 
             RestAdapter restAdapter = new RestAdapter.Builder()
                     .setEndpoint(apiUri)
-                    .setLogLevel(RestAdapter.LogLevel.FULL)
+                    //.setLogLevel(RestAdapter.LogLevel.FULL)
                     .build();
 
             List<? extends Image> images;
@@ -101,7 +101,7 @@ public class ImageProvider implements ImageProviderBase<Image> {
 
                     restAdapter = new RestAdapter.Builder()
                             .setEndpoint(apiUri)
-                            .setLogLevel(RestAdapter.LogLevel.FULL)
+                            //.setLogLevel(RestAdapter.LogLevel.FULL)
                             .setConverter(new SimpleXMLConverter())
                             .build();
                     Gelbooru gelbooru = restAdapter.create(Gelbooru.class);

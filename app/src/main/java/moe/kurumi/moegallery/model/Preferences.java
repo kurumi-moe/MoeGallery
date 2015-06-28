@@ -1,6 +1,7 @@
 package moe.kurumi.moegallery.model;
 
 import org.androidannotations.annotations.sharedpreferences.DefaultBoolean;
+import org.androidannotations.annotations.sharedpreferences.DefaultLong;
 import org.androidannotations.annotations.sharedpreferences.DefaultRes;
 import org.androidannotations.annotations.sharedpreferences.SharedPref;
 import moe.kurumi.moegallery.R;
@@ -29,5 +30,8 @@ public interface Preferences {
 
     @DefaultBoolean(value=true, keyRes=R.string.float_favorite_key)
     boolean floatFavorite();
+
+    @DefaultLong(value=0)
+    long lastUpdate();
 
 }

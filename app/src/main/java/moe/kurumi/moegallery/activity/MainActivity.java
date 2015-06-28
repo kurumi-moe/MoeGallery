@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -17,7 +18,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -62,25 +62,6 @@ import org.androidannotations.annotations.res.ColorRes;
 import org.androidannotations.annotations.res.StringArrayRes;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.apmem.tools.layouts.FlowLayout;
-import moe.kurumi.moegallery.R;
-import moe.kurumi.moegallery.model.AnimePictures;
-import moe.kurumi.moegallery.model.AnimePicturesUser;
-import moe.kurumi.moegallery.model.Behoimi;
-import moe.kurumi.moegallery.model.Danbooru;
-import moe.kurumi.moegallery.model.DanbooruTag;
-import moe.kurumi.moegallery.model.Gelbooru;
-import moe.kurumi.moegallery.model.Image;
-import moe.kurumi.moegallery.model.Moebooru;
-import moe.kurumi.moegallery.model.Preferences_;
-import moe.kurumi.moegallery.model.Tag;
-import moe.kurumi.moegallery.model.database.FavoriteImage;
-import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
-import moe.kurumi.moegallery.model.database.HistoryTag;
-import moe.kurumi.moegallery.model.database.HistoryTag$Table;
-import moe.kurumi.moegallery.provider.Providers;
-import moe.kurumi.moegallery.utils.Utils;
-import moe.kurumi.moegallery.view.adapter.ImageAdapter;
-import moe.kurumi.moegallery.view.adapter.RecyclerViewAdapterBase;
 
 import java.io.File;
 import java.io.IOException;
@@ -89,6 +70,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
+import moe.kurumi.moegallery.R;
+import moe.kurumi.moegallery.model.AnimePictures;
+import moe.kurumi.moegallery.model.AnimePicturesUser;
+import moe.kurumi.moegallery.model.Behoimi;
+import moe.kurumi.moegallery.model.Config;
+import moe.kurumi.moegallery.model.Danbooru;
+import moe.kurumi.moegallery.model.DanbooruTag;
+import moe.kurumi.moegallery.model.Gelbooru;
+import moe.kurumi.moegallery.model.Github;
+import moe.kurumi.moegallery.model.GithubRelease;
+import moe.kurumi.moegallery.model.Image;
+import moe.kurumi.moegallery.model.Moebooru;
+import moe.kurumi.moegallery.model.Preferences_;
+import moe.kurumi.moegallery.model.Tag;
+import moe.kurumi.moegallery.model.Version;
+import moe.kurumi.moegallery.model.database.FavoriteImage;
+import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
+import moe.kurumi.moegallery.model.database.HistoryTag;
+import moe.kurumi.moegallery.model.database.HistoryTag$Table;
+import moe.kurumi.moegallery.provider.Providers;
+import moe.kurumi.moegallery.utils.Utils;
+import moe.kurumi.moegallery.view.adapter.ImageAdapter;
+import moe.kurumi.moegallery.view.adapter.RecyclerViewAdapterBase;
 import okio.BufferedSink;
 import okio.Okio;
 import retrofit.RestAdapter;
@@ -169,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
     @ColorRes
     int black;
     File downloadDir;
+    File updateDir;
     ReloadImageCallback reloadImageCallback;
     float favoriteShowPosition;
     float favoriteHidePosition;
@@ -189,8 +194,12 @@ public class MainActivity extends AppCompatActivity {
     private Uri currentImageUri;
     private MaterialDialog progressDialog;
     private MaterialDialog messageDialog;
+    private MaterialDialog updateDialog;
     private boolean isInHistoryMode = false;
     private boolean isInFavoriteMode = false;
+
+    private String updateUrl = "";
+    private String updateFileName = "";
 
     @AfterViews
     void bindAdapter() {
@@ -198,9 +207,14 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         downloadDir = new File(Environment.getExternalStorageDirectory().getPath(), "MoeGallery");
+        updateDir = new File(Environment.getExternalStorageDirectory().getPath(), "Downloads");
 
         if (!downloadDir.exists()) {
             downloadDir.mkdir();
+        }
+
+        if (!updateDir.exists()) {
+            updateDir.mkdir();
         }
 
         progressDialog = new MaterialDialog.Builder(this)
@@ -212,6 +226,21 @@ public class MainActivity extends AppCompatActivity {
         messageDialog = new MaterialDialog.Builder(this)
                 .positiveText(android.R.string.ok)
                 .title(R.string.network_error)
+                .cancelable(true)
+                .theme(Theme.DARK)
+                .build();
+
+        updateDialog = new MaterialDialog.Builder(this)
+                .positiveText(android.R.string.ok)
+                .callback(new MaterialDialog.ButtonCallback() {
+                    @Override
+                    public void onPositive(MaterialDialog dialog) {
+                        super.onPositive(dialog);
+                        downloadUpdate();
+                    }
+                })
+                .negativeText(android.R.string.cancel)
+                .title(R.string.new_version)
                 .cancelable(true)
                 .theme(Theme.DARK)
                 .build();
@@ -511,6 +540,11 @@ public class MainActivity extends AppCompatActivity {
             messageDialog.cancel();
         }
 
+        if (updateDialog != null && updateDialog.isShowing()) {
+            updateDialog.cancel();
+        }
+
+
         super.onDestroy();
     }
 
@@ -562,6 +596,47 @@ public class MainActivity extends AppCompatActivity {
                 menuFavorite.setVisible(!isFloatFavorite);
             }
         }
+
+        checkUpdate();
+    }
+
+    @Background
+    void checkUpdate() {
+        long lastUpdate = preferences.lastUpdate().get();
+
+        if (System.currentTimeMillis() - lastUpdate > Config.UPDATE_DURATION) {
+            try {
+                RestAdapter restAdapter = new RestAdapter.Builder()
+                        .setEndpoint(Providers.GITHUB_API_URI)
+                        .build();
+                Github github = restAdapter.create(Github.class);
+                GithubRelease latest = github.latest();
+
+                PackageManager packageManager = getPackageManager();
+                String versionString =
+                        packageManager.getPackageInfo(getPackageName(), 0).versionName;
+
+                Version currentVersion = new Version(versionString);
+                Version latestVersion = new Version(latest.getTagName().substring(1));
+
+                if (latestVersion.compareTo(currentVersion) > 0 &&
+                        !latest.getPrerelease() &&
+                        latest.getAuthor().getLogin().equals(Config.GITHUB_UPDATE_AUTHOR)) {
+
+                    for (GithubRelease.Asset asset : latest.getAssets()) {
+
+                        if (asset.getContentType().equals(Config.GITHUB_UPDATE_CONTENT_TYPE) &&
+                                asset.getState().equals(Config.GITHUB_UPDATE_STATUS)) {
+                            showUpdateDialog(asset.getName(), asset.getSize(), asset.getBrowserDownloadUrl());
+                            preferences.edit().lastUpdate().put(System.currentTimeMillis());
+                        }
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -577,10 +652,10 @@ public class MainActivity extends AppCompatActivity {
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
-        Log.e(TAG, "drawerLayout.getRootView().getHeight(): "+drawerLayout.getRootView().getHeight());
-        Log.e(TAG, "drawerLayout.getRootView().getWidth(): "+drawerLayout.getRootView().getWidth());
-        Log.e(TAG, "metrics.heightPixels: "+metrics.heightPixels);
-        Log.e(TAG, "metrics.widthPixels: "+metrics.widthPixels);
+//        Log.e(TAG, "drawerLayout.getRootView().getHeight(): "+drawerLayout.getRootView().getHeight());
+//        Log.e(TAG, "drawerLayout.getRootView().getWidth(): "+drawerLayout.getRootView().getWidth());
+//        Log.e(TAG, "metrics.heightPixels: "+metrics.heightPixels);
+//        Log.e(TAG, "metrics.widthPixels: "+metrics.widthPixels);
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             right = drawerLayout.getRootView().getHeight() - metrics.widthPixels;
@@ -591,8 +666,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
-            RelativeLayout.LayoutParams favoriteParams = (RelativeLayout.LayoutParams)floatFavorite.getLayoutParams();
-            if (favoriteRightMargin==0) {
+            RelativeLayout.LayoutParams favoriteParams =
+                    (RelativeLayout.LayoutParams) floatFavorite.getLayoutParams();
+            if (favoriteRightMargin == 0) {
                 favoriteRightMargin = favoriteParams.rightMargin;
             }
             favoriteParams.rightMargin = favoriteRightMargin;
@@ -607,11 +683,13 @@ public class MainActivity extends AppCompatActivity {
 
             float favoriteBottomMargin = metrics.widthPixels - favoriteShowPosition;
 
-            RelativeLayout.LayoutParams favoriteParams = (RelativeLayout.LayoutParams)floatFavorite.getLayoutParams();
-            if (favoriteRightMargin==0) {
+            RelativeLayout.LayoutParams favoriteParams =
+                    (RelativeLayout.LayoutParams) floatFavorite.getLayoutParams();
+            if (favoriteRightMargin == 0) {
                 favoriteRightMargin = favoriteParams.rightMargin;
             }
-            favoriteParams.rightMargin = favoriteRightMargin + Utils.getNavigationBarHeight(this, newConfig.orientation);
+            favoriteParams.rightMargin =
+                    favoriteRightMargin + Utils.getNavigationBarHeight(this, newConfig.orientation);
 
             floatFavorite.setShowPosition(metrics.heightPixels - favoriteBottomMargin);
             floatFavorite.setHidePosition(
@@ -888,7 +966,7 @@ public class MainActivity extends AppCompatActivity {
 
         RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(apiUri)
-                .setLogLevel(RestAdapter.LogLevel.FULL)
+                //.setLogLevel(RestAdapter.LogLevel.FULL)
                 .build();
 
         switch (apiUri) {
@@ -916,7 +994,7 @@ public class MainActivity extends AppCompatActivity {
 
                 restAdapter = new RestAdapter.Builder()
                         .setEndpoint(apiUri)
-                        .setLogLevel(RestAdapter.LogLevel.FULL)
+                        //.setLogLevel(RestAdapter.LogLevel.FULL)
                         .setConverter(new SimpleXMLConverter())
                         .build();
 
@@ -1034,8 +1112,8 @@ public class MainActivity extends AppCompatActivity {
         String apiUri = preferences.provider().get();
 
         RestAdapter.Builder restAdapter = new RestAdapter.Builder()
-                .setEndpoint(apiUri)
-                .setLogLevel(RestAdapter.LogLevel.FULL);
+                //.setLogLevel(RestAdapter.LogLevel.FULL)
+                .setEndpoint(apiUri);
 
         switch (apiUri) {
             case Providers.ANIME_PICTURES_URI:
@@ -1598,6 +1676,18 @@ public class MainActivity extends AppCompatActivity {
         messageDialog.show();
     }
 
+    @UiThread
+    public void showUpdateDialog(String name, long size, String uri) {
+
+        updateFileName = name;
+        updateUrl = uri;
+
+        updateDialog.setContent(getString(
+                R.string.new_version_available) + " \n" + name + " (" + Utils.humanReadableByteCount(
+                size, true) + ")");
+        updateDialog.show();
+    }
+
     public File getDownloadDir() {
         return downloadDir;
     }
@@ -1638,6 +1728,34 @@ public class MainActivity extends AppCompatActivity {
             if (callback != null) {
                 callback.onFailed(image, e.getMessage());
             }
+        }
+    }
+
+
+    @Background
+    void downloadUpdate() {
+
+        try {
+            showProgressDialog();
+            File downloadedFile = new File(updateDir, updateFileName);
+            OkHttpClient client = new OkHttpClient();
+            com.squareup.okhttp.Request request =
+                    new com.squareup.okhttp.Request.Builder().url(
+                            Utils.fixURL(updateUrl)).build();
+            com.squareup.okhttp.Response response = client.newCall(request).execute();
+            BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
+            sink.writeAll(response.body().source());
+            sink.close();
+
+            hideProgressDialog();
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(Uri.fromFile(downloadedFile), "application/vnd.android.package-archive");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

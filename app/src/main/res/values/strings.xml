@@ -69,4 +69,6 @@
     <string name="license">License</string>
     <string name="version">Version</string>
     <string name="version_key" translatable="false">version</string>
+    <string name="new_version">New version</string>
+    <string name="new_version_available">New version available, update now?</string>
 </resources>

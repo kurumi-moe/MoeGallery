@@ -26,6 +26,13 @@ import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
+
 import moe.kurumi.moegallery.R;
 import moe.kurumi.moegallery.activity.MainActivity;
 import moe.kurumi.moegallery.model.AnimePictures;
@@ -37,13 +44,6 @@ import moe.kurumi.moegallery.model.database.HistoryImage$Table;
 import moe.kurumi.moegallery.provider.Providers;
 import moe.kurumi.moegallery.utils.MD5;
 import moe.kurumi.moegallery.utils.Utils;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.List;
-
 import pl.droidsonroids.gif.GifDrawable;
 import retrofit.RestAdapter;
 
@@ -183,7 +183,7 @@ public class ImageItemView extends FrameLayout implements MainActivity.ReloadIma
                     if (historyImages.size() == 0) {
                         RestAdapter restAdapter = new RestAdapter.Builder()
                                 .setEndpoint(apiUri)
-                                .setLogLevel(RestAdapter.LogLevel.FULL)
+                                //.setLogLevel(RestAdapter.LogLevel.FULL)
                                 .build();
                         AnimePictures animePictures = restAdapter.create(AnimePictures.class);
 

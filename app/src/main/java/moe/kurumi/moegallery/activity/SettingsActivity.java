@@ -27,8 +27,7 @@ public class SettingsActivity extends PreferenceActivity {
     void initPrefs() {
         try {
             PackageManager packageManager = getPackageManager();
-            String versionString = null;
-            versionString = packageManager.getPackageInfo(getPackageName(), 0).versionName;
+            String versionString = packageManager.getPackageInfo(getPackageName(), 0).versionName;
             version.setSummary(versionString);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
