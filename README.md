@@ -31,11 +31,17 @@ An android gallery to view anime images from online resources
 ##Features
 
 1\. Good UI for browser
+
 2\. Search tags from key words
+
 3\. History of searched/clicked tags
+
 4\. History of visited images
+
 5\. Add/browse favorite images (this is an app feature)
+
 6\. Auto download source image when in view mode (can be changed to manually from setting)
+
 7\. And more coming...
 
 ##How to make a contribution
