@@ -58,7 +58,7 @@ An android gallery to view anime images from online resources
 
 [MaterialDesignLibrary](https://github.com/navasmdc/MaterialDesignLibrary): A library with components of Android L to you use in android 2.2 
 
-##License
+##[License](https://github.com/kurumi-moe/MoeGallery/blob/master/LICENSE.md)
 
 ```
                     GNU GENERAL PUBLIC LICENSE
