@@ -16,6 +16,11 @@ An android gallery to view anime images from online resources
 [http://gelbooru.com](http://gelbooru.com)
 
 ##Screenshots
+<img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-48-57.jpg" alt="screenshot" width="300">
+<img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-49-59.jpg" alt="screenshot" width="300">
+<img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-50-26.jpg" alt="screenshot" width="300">
+<img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-50-44.jpg" alt="screenshot" width="300">
+<img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-51-13.jpg" alt="screenshot" width="300">
 
 ##How to make a contribution
 
