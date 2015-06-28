@@ -5,7 +5,7 @@ An android gallery to view anime images from online resources
 
 ##WARNING
 
-**Persons under 18 years of age using this application must be accompanied by an adult.**
+**You must be over 18 years old. Persons under 18 years of age using this application must be accompanied by an adult.**
 
 ##Supported sites 
 
