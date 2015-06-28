@@ -1,0 +1,83 @@
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+def AAVersion = '3.3.1'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // replace with the current version of the Android plugin
+        classpath 'com.android.tools.build:gradle:1.2.3'
+        // replace with the current version of the android-apt plugin
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+
+    defaultConfig {
+        applicationId "moe.kurumi.moegallery"
+        minSdkVersion 15
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+configurations {
+    compile.exclude group: 'stax'
+    compile.exclude group: 'xpp3'
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:22.1.0'
+    apt "org.androidannotations:androidannotations:$AAVersion"
+    compile "org.androidannotations:androidannotations-api:$AAVersion"
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.android.support:recyclerview-v7:22.1.0'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.squareup.retrofit:converter-simplexml:1.9.0'
+    compile 'com.android.support:cardview-v7:22.1.1'
+    compile 'com.android.support:gridlayout-v7:22.1.1'
+    compile 'org.apmem.tools:layouts:1.9@aar'
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.6'
+    apt 'com.raizlabs.android:DBFlow-Compiler:2.1.0'
+    compile "com.raizlabs.android:DBFlow-Core:2.1.0"
+    compile "com.raizlabs.android:DBFlow:2.1.0"
+    compile 'com.github.rey5137:material:1.1.1'
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.daimajia.easing:library:1.0.1@aar'
+    compile 'com.daimajia.androidanimations:library:1.1.3@aar'
+    compile 'com.afollestad:material-dialogs:0.7.4.2'
+    //compile 'com.github.navasmdc:MaterialDesign:1.4@aar'
+    compile 'com.getbase:floatingactionbutton:1.9.1'
+    compile project(':PhotoView')
+    compile project(':MaterialDesignLibrary')
+}
+
+apt {
+    arguments {
+        androidManifestFile variant.outputs[0].processResources.manifestFile
+        // if you have multiple outputs (when using splits), you may want to have other index than 0
+
+        // You can set optional annotation processing options here, like these commented options:
+        // logLevel 'INFO'
+        // logFile '/var/log/aa.log'
+    }
+}

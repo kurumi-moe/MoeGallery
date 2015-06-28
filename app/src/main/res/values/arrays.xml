@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="provider_names">
+        <item>@string/yandere</item>
+        <item>@string/konachan</item>
+        <item>@string/danbooru</item>
+        <item>@string/behoimi</item>
+        <item>@string/anime_pictures</item>
+        <item>@string/gelbooru</item>
+    </string-array>
+    <string-array name="provider_values">
+        <item>@string/yandere_uri</item>
+        <item>@string/konachan_uri</item>
+        <item>@string/danbooru_uri</item>
+        <item>@string/behoimi_uri</item>
+        <item>@string/anime_pictures_uri</item>
+        <item>@string/gelbooru_uri</item>
+    </string-array>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.gc.materialdesign.views.ButtonRectangle
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/button"
+    android:layout_width="wrap_content"
+    android:minWidth="80dp"
+    android:layout_height="48dp"
+    android:background="#00ff00"
+    android:text=""/>

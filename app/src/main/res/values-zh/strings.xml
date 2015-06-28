@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">萌图库</string>
+    <string name="content_provider">内容提供者网站</string>
+    <string name="settings">设置</string>
+    <string name="search">搜索</string>
+    <string name="search_hint">请输入关键字</string>
+    <string name="search_suggest">你是不是在找：</string>
+    <string name="no_tag_found">没有找到任何图片</string>
+    <string name="info">详情</string>
+    <string name="image_count">下载次数:</string>
+    <string name="image_name">文件名:</string>
+    <string name="image_resolution">分辨率:</string>
+    <string name="image_tags">标签:</string>
+    <string name="image_type">类型:</string>
+    <string name="image_user">发布者:</string>
+    <string name="image_size">大小:</string>
+    <string name="login_required">需要登陆</string>
+    <string name="login_required_message">你必须登陆才能浏览该图片，你必须已满18周岁。 </string>
+    <string name="password">密码</string>
+    <string name="username">用户名</string>
+    <string name="login_success">登陆成功</string>
+    <string name="login_failed">登陆失败</string>
+    <string name="history_image_tags">近期标签：</string>
+    <string name="set_as">设为</string>
+    <string name="please_wait">请稍等</string>
+    <string name="network_error">网络错误</string>
+    <string name="connect_error">无法连接到服务器</string>
+    <string name="auto_download">自动下载原图</string>
+    <string name="auto_download_summary">进入预览模式后自动下载原图</string>
+    <string name="home_button">主页</string>
+    <string name="full_image">全屏图片</string>
+    <string name="download_source_image">下载原图</string>
+    <string name="history">历史</string>
+    <string name="favorite">收藏</string>
+    <string name="no_history">未找到历史记录</string>
+    <string name="no_favorite">未找到收藏记录</string>
+    <string name="add_favorite">添加到收藏</string>
+    <string name="remove_favorite">从收藏移除</string>
+    <string name="float_search">浮动搜索按钮</string>
+    <string name="float_search_summary">使用浮动的搜索按钮，或使用标题栏搜索按钮</string>
+    <string name="float_favorite">浮动收藏按钮</string>
+    <string name="float_favorite_summary">使用浮动的收藏按钮，或使用标题栏菜单收藏按钮</string>
+    <string name="share">分享</string>
+</resources>

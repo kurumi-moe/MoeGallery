@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="@string/provider_key"
+        android:title="@string/content_provider"
+        android:defaultValue="@string/yandere_uri"
+        android:entries="@array/provider_names"
+        android:entryValues="@array/provider_values"/>
+    <SwitchPreference
+        android:key="@string/auto_download_key"
+        android:title="@string/auto_download"
+        android:defaultValue="true"
+        android:summary="@string/auto_download_summary"/>
+    <SwitchPreference
+        android:key="@string/float_search_key"
+        android:title="@string/float_search"
+        android:defaultValue="true"
+        android:summary="@string/float_search_summary"/>
+    <SwitchPreference
+        android:key="@string/float_favorite_key"
+        android:title="@string/float_favorite"
+        android:defaultValue="true"
+        android:summary="@string/float_favorite_summary"/>
+</PreferenceScreen>

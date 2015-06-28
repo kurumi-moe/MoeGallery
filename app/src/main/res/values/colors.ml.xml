@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="actionbar_background" type="color">#60000000</item>
+    <item name="black" type="color">#FF000000</item>
+    <item name="transparent" type="color">#00000000</item>
+    <item name="text_background" type="color">#80000000</item>
+</resources>

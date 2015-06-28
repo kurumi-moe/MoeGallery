@@ -1,0 +1,1 @@
+include ':app', ':PhotoView', ':android-gesture-detectors', ":MaterialDesignLibrary"

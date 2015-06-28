@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="grid_padding">0dp</dimen>
+    <dimen name="grid_padding_top">56dp</dimen>
+    <dimen name="grid_item_padding">2dp</dimen>
+    <dimen name="grid_padding_bottom">50dp</dimen>
+    <dimen name="toolbar_margin_right">0dp</dimen>
+    <dimen name="toolbar_margin_top">0dp</dimen>
+</resources>

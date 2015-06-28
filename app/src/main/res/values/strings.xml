@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">Moe Gallery</string>
+    <string name="yandere" translatable="false">YandeRe</string>
+    <string name="konachan" translatable="false">Konachan</string>
+    <string name="danbooru" translatable="false">Danbooru</string>
+    <string name="behoimi" translatable="false">Behoimi</string>
+    <string name="anime_pictures" translatable="false">Anime-Pictures</string>
+    <string name="gelbooru" translatable="false">Gelbooru</string>
+
+    <string name="yandere_uri" translatable="false">https://yande.re</string>
+    <string name="konachan_uri" translatable="false">https://konachan.com</string>
+    <string name="danbooru_uri" translatable="false">https://danbooru.donmai.us</string>
+    <string name="behoimi_uri" translatable="false">http://behoimi.org</string>
+    <string name="anime_pictures_uri" translatable="false">https://anime-pictures.net</string>
+    <string name="gelbooru_uri" translatable="false">http://gelbooru.com</string>
+
+    <string name="default_anime_pictures_cookie" translatable="false"> </string>
+
+    <string name="settings">Settings</string>
+    <string name="content_provider">Content provider\'s website</string>
+    <string name="provider_key" translatable="false">provider</string>
+    <string name="search">Search</string>
+    <string name="search_hint">Please input keyword</string>
+    <string name="search_suggest">Maybe you meant:</string>
+    <string name="no_tag_found">Nobody here but us chickens!</string>
+    <string name="info">Info details</string>
+    <string name="image_name">Name:</string>
+    <string name="image_resolution">Resolution:</string>
+    <string name="image_type">Type:</string>
+    <string name="image_count">Count:</string>
+    <string name="image_user">User:</string>
+    <string name="image_tags">Tags:</string>
+    <string name="image_size">Size:</string>
+    <string name="login_required">Login required</string>
+    <string name="login_required_message">You must be logged in to view this image, You must be over 18 years old.</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login_success">Login success</string>
+    <string name="login_failed">Login failed</string>
+    <string name="history_image_tags">Recent tags:</string>
+    <string name="home_button">Home</string>
+    <string name="full_image">Full image</string>
+    <string name="set_as">Set as</string>
+    <string name="please_wait">Please wait a moment</string>
+    <string name="network_error">Network error</string>
+    <string name="connect_error">Can not connect to server</string>
+
+    <string name="launcher_icon_source" translatable="false">http://www.pixiv.net/member_illust.php?mode=medium&amp;illust_id=44978660</string>
+    <string name="auto_download_summary">Auto download original image when in preview mode</string>
+    <string name="auto_download">Auto download source picture</string>
+    <string name="auto_download_key" translatable="false">auto_download</string>
+    <string name="download_source_image">Download source image</string>
+    <string name="history">History</string>
+    <string name="no_history">No history found</string>
+    <string name="favorite">Favorite</string>
+    <string name="no_favorite">No favorite image found</string>
+    <string name="add_favorite">Add to favorite</string>
+    <string name="remove_favorite">Remove from favorite</string>
+    <string name="float_search_key" translatable="false">float_search_key</string>
+    <string name="float_search">Float search button</string>
+    <string name="float_search_summary">Using float button for search or use action bar search button</string>
+    <string name="float_favorite_key" translatable="false">float_favorite_key</string>
+    <string name="float_favorite">Float favorite button</string>
+    <string name="float_favorite_summary">Float favorite button or use action bar favorite button</string>
+    <string name="share">Share</string>
+</resources>

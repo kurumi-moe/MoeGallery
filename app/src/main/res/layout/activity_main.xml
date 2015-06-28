@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<moe.kurumi.moegallery.view.HackyDrawerLayout
+    android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/actionbar_background">
+
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/grid_padding_bottom"
+            android:paddingTop="@dimen/grid_padding_top"/>
+
+        <FrameLayout
+            android:id="@+id/image_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0"
+            android:background="@color/black">
+        </FrameLayout>
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:clickable="true"
+            android:contentDescription="@string/full_image"
+            android:visibility="gone"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.gc.materialdesign.views.ButtonFloat
+                android:id="@+id/float_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="50dp"
+                android:background="#1E88E5"
+                app:animate="true"
+                app:iconDrawable="@drawable/ic_search_white_48dp"/>
+
+            <com.gc.materialdesign.views.ButtonFloat
+                android:id="@+id/float_favorite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="50dp"
+                android:background="#e91e63"
+                android:visibility="invisible"
+                app:animate="true"
+                app:iconDrawable="@drawable/ic_favorite_border_white_48dp"/>
+        </RelativeLayout>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/toolbar_margin_top"
+            android:background="@color/actionbar_background"
+            android:minHeight="?attr/actionBarSize"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/left_drawer"
+        android:layout_width="180dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:gravity="center_vertical"
+        android:background="@android:color/transparent"
+        android:orientation="vertical">
+
+        <ListView
+            android:id="@+id/left_drawer_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"/>
+
+        <TextView
+            android:id="@+id/history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:gravity="center_vertical"
+            android:minHeight="40dp"
+            android:paddingLeft="30dp"
+            android:text="@string/history"/>
+
+        <TextView
+            android:id="@+id/favorite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:selectableItemBackground"
+            android:clickable="true"
+            android:gravity="center_vertical"
+            android:minHeight="40dp"
+            android:paddingLeft="30dp"
+            android:text="@string/favorite"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/right_drawer"
+        android:layout_width="180dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:gravity="center_vertical"
+        android:background="@android:color/transparent"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/home_button"
+            android:padding="20dp"
+            android:src="@drawable/ic_home_white_36dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/history_image_tags"/>
+
+        <ListView
+            android:id="@+id/right_drawer_list"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"/>
+    </LinearLayout>
+
+</moe.kurumi.moegallery.view.HackyDrawerLayout>
