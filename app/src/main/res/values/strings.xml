@@ -63,4 +63,10 @@
     <string name="float_favorite">Float favorite button</string>
     <string name="float_favorite_summary">Float favorite button or use action bar favorite button</string>
     <string name="share">Share</string>
+    <string name="about">About</string>
+    <string name="developer">Developer</string>
+    <string name="developer_summary" translatable="false">kurumi &lt;kurumi.saimoe@gmail.com&gt;</string>
+    <string name="license">License</string>
+    <string name="version">Version</string>
+    <string name="version_key" translatable="false">version</string>
 </resources>

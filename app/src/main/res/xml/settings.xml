@@ -1,24 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <ListPreference
-        android:key="@string/provider_key"
-        android:title="@string/content_provider"
         android:defaultValue="@string/yandere_uri"
         android:entries="@array/provider_names"
-        android:entryValues="@array/provider_values"/>
+        android:entryValues="@array/provider_values"
+        android:key="@string/provider_key"
+        android:title="@string/content_provider"/>
     <SwitchPreference
+        android:defaultValue="true"
         android:key="@string/auto_download_key"
-        android:title="@string/auto_download"
-        android:defaultValue="true"
-        android:summary="@string/auto_download_summary"/>
+        android:summary="@string/auto_download_summary"
+        android:title="@string/auto_download"/>
     <SwitchPreference
+        android:defaultValue="true"
         android:key="@string/float_search_key"
-        android:title="@string/float_search"
-        android:defaultValue="true"
-        android:summary="@string/float_search_summary"/>
+        android:summary="@string/float_search_summary"
+        android:title="@string/float_search"/>
     <SwitchPreference
-        android:key="@string/float_favorite_key"
-        android:title="@string/float_favorite"
         android:defaultValue="true"
-        android:summary="@string/float_favorite_summary"/>
+        android:key="@string/float_favorite_key"
+        android:summary="@string/float_favorite_summary"
+        android:title="@string/float_favorite"/>
+    <PreferenceScreen
+        android:title="@string/about">
+        <Preference
+            android:key="developer"
+            android:summary="@string/developer_summary"
+            android:title="@string/developer"/>
+        <Preference
+            android:key="license"
+            android:summary=""
+            android:title="@string/license">
+            <intent android:action="moe.kurumi.moegallery.action.VIEW_LICENSES"/>
+        </Preference>
+        <Preference
+            android:key="@string/version_key"
+            android:summary=""
+            android:title="@string/version"/>
+    </PreferenceScreen>
 </PreferenceScreen>

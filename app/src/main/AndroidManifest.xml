@@ -23,6 +23,14 @@
             android:name=".activity.SettingsActivity_"
             android:label="@string/settings"/>
 
+        <activity android:name=".activity.LicensesActivity_"
+                  android:label="@string/license"
+                  android:theme="@style/Theme.AppCompat.DialogWhenLarge">
+            <intent-filter>
+                <action android:name="moe.kurumi.moegallery.action.VIEW_LICENSES"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
