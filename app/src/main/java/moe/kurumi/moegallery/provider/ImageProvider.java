@@ -42,12 +42,11 @@ public class ImageProvider implements ImageProviderBase<Image> {
     public static final int LIMIT = 20;
     @Pref
     Preferences_ preferences;
+    @RootContext
+    Context context;
     private List<Image> images;
     private OnListUpdateListener listUpdateListener;
     private int page = 0;
-
-    @RootContext
-    Context context;
 
     @Override
     public void bindList(List<Image> list, OnListUpdateListener listener) {
@@ -79,6 +78,9 @@ public class ImageProvider implements ImageProviderBase<Image> {
                 case Providers.KONACHAN_URI:
                 case Providers.YANDERE_URI:
                     Moebooru moebooru = restAdapter.create(Moebooru.class);
+                    if (tags.isEmpty()) {
+                        tags = "*";
+                    }
                     images = moebooru.list(LIMIT, page, tags);
                     break;
                 case Providers.BEHOIMI_URI:
@@ -92,7 +94,8 @@ public class ImageProvider implements ImageProviderBase<Image> {
                     if (tags.isEmpty()) {
                         animePicturesList = animePictures.list(page - 1, "json", "en");
                     } else {
-                        animePicturesList = animePictures.search(page - 1, tags, "date", 0,"json", "en");
+                        animePicturesList = animePictures.search(page - 1, tags, "date", 0, "json",
+                                "en");
                     }
 
                     images = animePicturesList.getPreviews();
@@ -162,7 +165,7 @@ public class ImageProvider implements ImageProviderBase<Image> {
                 this.images.add(image);
             }
             notifyDataSetChanged();
-            if (this.images.size()==0 && context!=null) {
+            if (this.images.size() == 0 && context != null) {
                 ((MainActivity) context).makeToast(R.string.no_history);
                 ((MainActivity) context).clearHistoryMode();
             }
@@ -187,7 +190,7 @@ public class ImageProvider implements ImageProviderBase<Image> {
                 this.images.add(image);
             }
             notifyDataSetChanged();
-            if (this.images.size()==0 && context!=null) {
+            if (this.images.size() == 0 && context != null) {
                 ((MainActivity) context).makeToast(R.string.no_favorite);
                 ((MainActivity) context).clearFavoriteMode();
             }
