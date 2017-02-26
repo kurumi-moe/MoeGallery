@@ -29,8 +29,11 @@ import moe.kurumi.moegallery.model.database.FavoriteImage;
 import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
 import moe.kurumi.moegallery.model.database.HistoryImage;
 import moe.kurumi.moegallery.model.database.HistoryImage$Table;
-import retrofit.RestAdapter;
-import retrofit.converter.SimpleXMLConverter;
+import moe.kurumi.moegallery.utils.OkHttp;
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 /**
  * Created by kurumi on 15-5-28.
@@ -48,10 +51,19 @@ public class ImageProvider implements ImageProviderBase<Image> {
     private OnListUpdateListener listUpdateListener;
     private int page = 0;
 
+    private Retrofit.Builder mBuilder;
+
     @Override
     public void bindList(List<Image> list, OnListUpdateListener listener) {
         images = list;
         listUpdateListener = listener;
+
+        OkHttpClient client = OkHttp.getInstance().client();
+        mBuilder = new Retrofit.Builder()
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(SimpleXmlConverterFactory.create());
+
         loadList("");
     }
 
@@ -63,9 +75,8 @@ public class ImageProvider implements ImageProviderBase<Image> {
 
             String apiUri = preferences.provider().get();
 
-            RestAdapter restAdapter = new RestAdapter.Builder()
-                    .setEndpoint(apiUri)
-                    //.setLogLevel(RestAdapter.LogLevel.FULL)
+            Retrofit restAdapter = mBuilder
+                    .baseUrl(apiUri)
                     .build();
 
             List<? extends Image> images;
@@ -73,7 +84,7 @@ public class ImageProvider implements ImageProviderBase<Image> {
             switch (apiUri) {
                 case Providers.DANBOORU_URI:
                     Danbooru danbooru = restAdapter.create(Danbooru.class);
-                    images = danbooru.list(LIMIT, page, tags);
+                    images = danbooru.list(LIMIT, page, tags).execute().body();
                     break;
                 case Providers.KONACHAN_URI:
                 case Providers.YANDERE_URI:
@@ -81,34 +92,32 @@ public class ImageProvider implements ImageProviderBase<Image> {
                     if (tags.isEmpty()) {
                         tags = "*";
                     }
-                    images = moebooru.list(LIMIT, page, tags);
+                    images = moebooru.list(LIMIT, page, tags).execute().body();
                     break;
                 case Providers.BEHOIMI_URI:
                     Behoimi behoimi = restAdapter.create(Behoimi.class);
-                    images = behoimi.list(LIMIT, page, tags);
+                    images = behoimi.list(LIMIT, page, tags).execute().body();
                     break;
                 case Providers.ANIME_PICTURES_URI:
                     AnimePictures animePictures = restAdapter.create(AnimePictures.class);
                     AnimePicturesList animePicturesList;
 
                     if (tags.isEmpty()) {
-                        animePicturesList = animePictures.list(page - 1, "json", "en");
+                        animePicturesList = animePictures.list(page - 1, "json", "en").execute().body();
                     } else {
                         animePicturesList = animePictures.search(page - 1, tags, "date", 0, "json",
-                                "en");
+                                "en").execute().body();
                     }
 
                     images = animePicturesList.getPreviews();
                     break;
                 case Providers.GELBOORU_URI:
 
-                    restAdapter = new RestAdapter.Builder()
-                            .setEndpoint(apiUri)
-                            //.setLogLevel(RestAdapter.LogLevel.FULL)
-                            .setConverter(new SimpleXMLConverter())
+                    restAdapter = mBuilder
+                            .baseUrl(apiUri)
                             .build();
                     Gelbooru gelbooru = restAdapter.create(Gelbooru.class);
-                    GelbooruList gelbooruList = gelbooru.list(LIMIT, page - 1, tags);
+                    GelbooruList gelbooruList = gelbooru.list(LIMIT, page - 1, tags).execute().body();
 
                     images = gelbooruList.getPost();
 

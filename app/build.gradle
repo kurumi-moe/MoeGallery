@@ -1,6 +1,11 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
-def AAVersion = '3.3.1'
+
+def gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim()
+def gitTag = 'git describe --abbrev=0 --tags'
+        .execute([], project.rootDir).text.trim().replaceAll("v", "")
+def gitTagCount = Integer.parseInt('git rev-list --tags --no-walk --count'
+        .execute([], project.rootDir).text.trim())
 
 buildscript {
     repositories {
@@ -20,20 +25,40 @@ repositories {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "22.0.1"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         applicationId "moe.kurumi.moegallery"
-        minSdkVersion 15
-        targetSdkVersion 25
-        versionCode 3
-        versionName "1.2.0"
+
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+
+        versionCode gitTagCount
+        versionName gitTag
+
+        buildConfigField "String", "GIT_SHA", "\"${gitSha}\""
+        setProperty("archivesBaseName", "MoeGallery-v$versionName")
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        release
+    }
+
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
+            shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            testProguardFile('proguard-test-rules.pro')
+            signingConfig signingConfigs.release
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -45,18 +70,23 @@ configurations {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:25.1.1'
-    compile 'com.android.support:recyclerview-v7:25.1.1'
-    compile 'com.android.support:cardview-v7:25.1.1'
-    compile 'com.android.support:gridlayout-v7:25.1.1'
+    compile "com.android.support:appcompat-v7:${rootProject.ext.supportVersion}"
+    compile "com.android.support:recyclerview-v7:${rootProject.ext.supportVersion}"
+    compile "com.android.support:cardview-v7:${rootProject.ext.supportVersion}"
+    compile "com.android.support:gridlayout-v7:${rootProject.ext.supportVersion}"
 
-    apt "org.androidannotations:androidannotations:$AAVersion"
-    compile "org.androidannotations:androidannotations-api:$AAVersion"
+    apt "org.androidannotations:androidannotations:${rootProject.ext.aaVersion}"
+    compile "org.androidannotations:androidannotations-api:${rootProject.ext.aaVersion}"
 
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'com.squareup.retrofit:converter-simplexml:1.9.0'
-    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.squareup.retrofit2:converter-simplexml:2.2.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.2.0'
+    compile 'com.squareup.okhttp3:okhttp:3.4.2'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.4.2'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0'
+
+    compile 'com.google.code.gson:gson:2.8.0'
 
     compile 'org.apmem.tools:layouts:1.9@aar'
 
@@ -95,3 +125,5 @@ apt {
         // logFile '/var/log/aa.log'
     }
 }
+
+apply from: '../signing.gradle'

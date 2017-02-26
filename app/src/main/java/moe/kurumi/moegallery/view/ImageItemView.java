@@ -9,14 +9,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.jakewharton.picasso.OkHttp3Downloader;
 import com.raizlabs.android.dbflow.sql.builder.Condition;
 import com.raizlabs.android.dbflow.sql.language.Select;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
@@ -43,9 +39,16 @@ import moe.kurumi.moegallery.model.database.HistoryImage;
 import moe.kurumi.moegallery.model.database.HistoryImage$Table;
 import moe.kurumi.moegallery.provider.Providers;
 import moe.kurumi.moegallery.utils.MD5;
+import moe.kurumi.moegallery.utils.OkHttp;
 import moe.kurumi.moegallery.utils.Utils;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import pl.droidsonroids.gif.GifDrawable;
-import retrofit.RestAdapter;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 /**
  * Created by kurumi on 15-5-28.
@@ -82,12 +85,20 @@ public class ImageItemView extends FrameLayout implements MainActivity.ReloadIma
     @Pref
     Preferences_ preferences;
 
+    private Retrofit.Builder mBuilder;
+
     public ImageItemView(Context context) {
         super(context);
         activity = (MainActivity) context;
         image = (ImageView) activity.findViewById(R.id.image);
 
         downloadDir = activity.getDownloadDir();
+
+        OkHttpClient client = OkHttp.getInstance().client();
+        mBuilder = new Retrofit.Builder()
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(SimpleXmlConverterFactory.create());
     }
 
     public void bind(Image image, int position) {
@@ -181,16 +192,15 @@ public class ImageItemView extends FrameLayout implements MainActivity.ReloadIma
                             Condition.column(HistoryImage$Table.PREVIEWURL).eq(imageSource.getPreviewUrl())).queryList();
 
                     if (historyImages.size() == 0) {
-                        RestAdapter restAdapter = new RestAdapter.Builder()
-                                .setEndpoint(apiUri)
-                                //.setLogLevel(RestAdapter.LogLevel.FULL)
+                        Retrofit restAdapter = mBuilder
+                                .baseUrl(apiUri)
                                 .build();
                         AnimePictures animePictures = restAdapter.create(AnimePictures.class);
 
                         String cookie = preferences.animePicturesServer().get() + "=" +
                                 preferences.animePicturesToken().get();
 
-                        image = animePictures.post(imageSource.getId(), "json", "en", cookie);
+                        image = animePictures.post(imageSource.getId(), "json", "en", cookie).execute().body();
                     } else {
                         image = historyImages.get(0);
                     }
@@ -204,7 +214,7 @@ public class ImageItemView extends FrameLayout implements MainActivity.ReloadIma
 
             this.image.setTag(image);
             picasso = new Picasso.Builder(getContext()).downloader(
-                    new OkHttpDownloader(picassoClient)).build();
+                    new OkHttp3Downloader(picassoClient)).build();
 
             loadImage(picasso, image);
         } catch (Exception e) {

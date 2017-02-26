@@ -17,3 +17,14 @@ allprojects {
         jcenter()
     }
 }
+
+ext {
+    compileSdkVersion = 25
+    buildToolsVersion = "25.0.0"
+    minSdkVersion = 16
+    targetSdkVersion = 25
+
+    supportVersion = "25.2.0"
+
+    aaVersion = "3.3.2"
+}

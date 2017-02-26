@@ -1,12 +1,13 @@
 package moe.kurumi.moegallery.model;
 
-import retrofit.http.GET;
-import retrofit.http.Header;
-import retrofit.http.Multipart;
-import retrofit.http.POST;
-import retrofit.http.Part;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.Call;
+import retrofit2.http.GET;
+import retrofit2.http.Header;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Created by kurumi on 15-5-31.
@@ -14,14 +15,14 @@ import retrofit.http.Query;
 public interface AnimePictures {
 
     @GET("/pictures/view_posts/{page}")
-    AnimePicturesList list(
+    Call<AnimePicturesList> list(
             @Path("page") int page,
             @Query("type") String type,
             @Query("lang") String lang
     );
 
     @GET("/pictures/view_post/{post}")
-    AnimePicturesImage post(
+    Call<AnimePicturesImage> post(
             @Path("post") long post,
             @Query("type") String type,
             @Query("lang") String lang,
@@ -29,14 +30,14 @@ public interface AnimePictures {
     );
 
     @GET("/pictures/view_post/{post}")
-    AnimePicturesImage post(
+    Call<AnimePicturesImage> post(
             @Path("post") long post,
             @Query("type") String type,
             @Query("lang") String lang
     );
 
     @GET("/pictures/view_posts/{page}")
-    AnimePicturesList search(
+    Call<AnimePicturesList> search(
             @Path("page") int page,
             @Query("search_tag") String tags,
             @Query("order_by") String order,
@@ -47,13 +48,13 @@ public interface AnimePictures {
 
     @Multipart
     @POST("/pictures/autocomplete_tag")
-    AnimePicturesTagList tag(
+    Call<AnimePicturesTagList> tag(
             @Part("tag") String tags
     );
 
     @Multipart
     @POST("/login/submit")
-    AnimePicturesUser login(
+    Call<AnimePicturesUser> login(
             @Part("login") String username,
             @Part("password") String password,
             @Part("time_zone") String timezone

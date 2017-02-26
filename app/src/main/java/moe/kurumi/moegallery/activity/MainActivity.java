@@ -46,8 +46,6 @@ import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
 import com.raizlabs.android.dbflow.sql.builder.Condition;
 import com.raizlabs.android.dbflow.sql.language.Select;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Background;
@@ -90,17 +88,21 @@ import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
 import moe.kurumi.moegallery.model.database.HistoryTag;
 import moe.kurumi.moegallery.model.database.HistoryTag$Table;
 import moe.kurumi.moegallery.provider.Providers;
+import moe.kurumi.moegallery.utils.OkHttp;
 import moe.kurumi.moegallery.utils.Utils;
 import moe.kurumi.moegallery.view.adapter.ImageAdapter;
 import moe.kurumi.moegallery.view.adapter.RecyclerViewAdapterBase;
+import okhttp3.Headers;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import okio.BufferedSink;
 import okio.Okio;
-import retrofit.RestAdapter;
-import retrofit.client.Header;
-import retrofit.client.OkClient;
-import retrofit.client.Request;
-import retrofit.client.Response;
-import retrofit.converter.SimpleXMLConverter;
+
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
@@ -200,6 +202,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String updateUrl = "";
     private String updateFileName = "";
+
+    private Retrofit.Builder mBuilder;
 
     @AfterViews
     void bindAdapter() {
@@ -327,7 +331,9 @@ public class MainActivity extends AppCompatActivity {
                     //Log.d(TAG, "" + lastPosition);
 
                     // load more
-                    if (lastPosition == ((RecyclerViewAdapterBase) recyclerView.getAdapter()).getNextCount() - 1) {
+                    if (lastPosition
+                            == ((RecyclerViewAdapterBase) recyclerView.getAdapter()).getNextCount()
+                            - 1) {
                         ((RecyclerViewAdapterBase) recyclerView.getAdapter()).loadNextPage(tags);
                     }
                 }
@@ -497,7 +503,6 @@ public class MainActivity extends AppCompatActivity {
 
         menuFavorite.setVisible(!isMain && !preferences.floatFavorite().get());
 
-
         if (!isMain) {
             Image image = (Image) this.fullImage.getTag();
             List<FavoriteImage> favoriteImages = new Select().from(FavoriteImage.class).where(
@@ -544,7 +549,6 @@ public class MainActivity extends AppCompatActivity {
             updateDialog.cancel();
         }
 
-
         super.onDestroy();
     }
 
@@ -562,6 +566,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        OkHttpClient client = OkHttp.getInstance().client();
+        mBuilder = new Retrofit.Builder()
+                .client(client)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(SimpleXmlConverterFactory.create());
 
         if (providerUri != null && !providerUri.equals(preferences.provider().get())) {
 
@@ -606,11 +616,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (System.currentTimeMillis() - lastUpdate > Config.UPDATE_DURATION) {
             try {
-                RestAdapter restAdapter = new RestAdapter.Builder()
-                        .setEndpoint(Providers.GITHUB_API_URI)
-                        .build();
+                Retrofit restAdapter = mBuilder.baseUrl(Providers.GITHUB_API_URI).build();
                 Github github = restAdapter.create(Github.class);
-                GithubRelease latest = github.latest();
+                GithubRelease latest = github.latest().execute().body();
 
                 PackageManager packageManager = getPackageManager();
                 String versionString =
@@ -627,12 +635,12 @@ public class MainActivity extends AppCompatActivity {
 
                         if (asset.getContentType().equals(Config.GITHUB_UPDATE_CONTENT_TYPE) &&
                                 asset.getState().equals(Config.GITHUB_UPDATE_STATUS)) {
-                            showUpdateDialog(asset.getName(), asset.getSize(), asset.getBrowserDownloadUrl());
+                            showUpdateDialog(asset.getName(), asset.getSize(),
+                                    asset.getBrowserDownloadUrl());
                             preferences.edit().lastUpdate().put(System.currentTimeMillis());
                         }
                     }
                 }
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -652,10 +660,10 @@ public class MainActivity extends AppCompatActivity {
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
 
-//        Log.e(TAG, "drawerLayout.getRootView().getHeight(): "+drawerLayout.getRootView().getHeight());
-//        Log.e(TAG, "drawerLayout.getRootView().getWidth(): "+drawerLayout.getRootView().getWidth());
-//        Log.e(TAG, "metrics.heightPixels: "+metrics.heightPixels);
-//        Log.e(TAG, "metrics.widthPixels: "+metrics.widthPixels);
+        //        Log.e(TAG, "drawerLayout.getRootView().getHeight(): "+drawerLayout.getRootView().getHeight());
+        //        Log.e(TAG, "drawerLayout.getRootView().getWidth(): "+drawerLayout.getRootView().getWidth());
+        //        Log.e(TAG, "metrics.heightPixels: "+metrics.heightPixels);
+        //        Log.e(TAG, "metrics.widthPixels: "+metrics.widthPixels);
 
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             right = drawerLayout.getRootView().getHeight() - metrics.widthPixels;
@@ -693,7 +701,8 @@ public class MainActivity extends AppCompatActivity {
 
             floatFavorite.setShowPosition(metrics.heightPixels - favoriteBottomMargin);
             floatFavorite.setHidePosition(
-                    metrics.heightPixels - favoriteBottomMargin - (favoriteShowPosition - favoriteHidePosition));
+                    metrics.heightPixels - favoriteBottomMargin - (favoriteShowPosition
+                            - favoriteHidePosition));
         }
     }
 
@@ -766,10 +775,10 @@ public class MainActivity extends AppCompatActivity {
         if (image.getTagList().size() > 0) {
             for (String s : image.getTagList()) {
 
-//            FlowLayout.LayoutParams params =
-//                    new FlowLayout.LayoutParams(FlowLayout.LayoutParams.WRAP_CONTENT,
-//                            FlowLayout.LayoutParams.WRAP_CONTENT);
-//            params.setMargins(0, 0, 20, 20);
+                //            FlowLayout.LayoutParams params =
+                //                    new FlowLayout.LayoutParams(FlowLayout.LayoutParams.WRAP_CONTENT,
+                //                            FlowLayout.LayoutParams.WRAP_CONTENT);
+                //            params.setMargins(0, 0, 20, 20);
                 ButtonRectangle button = (ButtonRectangle) getLayoutInflater().
                         inflate(R.layout.tag_button, tagsView, false);
                 button.setText(s.replace('_', ' '));
@@ -960,53 +969,56 @@ public class MainActivity extends AppCompatActivity {
     @Background
     public void listTag(String tag) {
 
-        String apiUri = preferences.provider().get();
+        try {
+            String apiUri = preferences.provider().get();
 
-        List<? extends Tag> tags;
+            List<? extends Tag> tags;
 
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(apiUri)
-                //.setLogLevel(RestAdapter.LogLevel.FULL)
-                .build();
+            Retrofit restAdapter = mBuilder
+                    .baseUrl(apiUri)
+                    //.setLogLevel(RestAdapter.LogLevel.FULL)
+                    .build();
 
-        switch (apiUri) {
-            case Providers.KONACHAN_URI:
-            case Providers.YANDERE_URI:
-                Moebooru moebooru = restAdapter.create(Moebooru.class);
-                tags = moebooru.tag(tag.trim().replace(' ', '_'));
-                break;
-            case Providers.DANBOORU_URI:
-                Danbooru danbooru = restAdapter.create(Danbooru.class);
-                List<DanbooruTag> tagsStart = danbooru.tag("*" + tag.trim());
-                List<DanbooruTag> tagsEnd = danbooru.tag(tag.trim() + "*");
-                tagsStart.addAll(tagsEnd);
-                tags = tagsStart;
-                break;
-            case Providers.BEHOIMI_URI:
-                Behoimi behoimi = restAdapter.create(Behoimi.class);
-                tags = behoimi.tag("*" + tag.trim().replace(' ', '_') + "*");
-                break;
-            case Providers.ANIME_PICTURES_URI:
-                AnimePictures animePictures = restAdapter.create(AnimePictures.class);
-                tags = animePictures.tag(tag).getTagsList();
-                break;
-            case Providers.GELBOORU_URI:
+            switch (apiUri) {
+                case Providers.KONACHAN_URI:
+                case Providers.YANDERE_URI:
+                    Moebooru moebooru = restAdapter.create(Moebooru.class);
+                    tags = moebooru.tag(tag.trim().replace(' ', '_')).execute().body();
+                    break;
+                case Providers.DANBOORU_URI:
+                    Danbooru danbooru = restAdapter.create(Danbooru.class);
+                    List<DanbooruTag> tagsStart = danbooru.tag("*" + tag.trim()).execute().body();
+                    List<DanbooruTag> tagsEnd = danbooru.tag(tag.trim() + "*").execute().body();
+                    tagsStart.addAll(tagsEnd);
+                    tags = tagsStart;
+                    break;
+                case Providers.BEHOIMI_URI:
+                    Behoimi behoimi = restAdapter.create(Behoimi.class);
+                    tags = behoimi.tag("*" + tag.trim().replace(' ', '_') + "*").execute().body();
+                    break;
+                case Providers.ANIME_PICTURES_URI:
+                    AnimePictures animePictures = restAdapter.create(AnimePictures.class);
+                    tags = animePictures.tag(tag).execute().body().getTagsList();
+                    break;
+                case Providers.GELBOORU_URI:
 
-                restAdapter = new RestAdapter.Builder()
-                        .setEndpoint(apiUri)
-                        //.setLogLevel(RestAdapter.LogLevel.FULL)
-                        .setConverter(new SimpleXMLConverter())
-                        .build();
+                    restAdapter = mBuilder
+                            .baseUrl(apiUri)
+                            //.setLogLevel(RestAdapter.LogLevel.FULL)
+                            .build();
 
-                Gelbooru gelbooru = restAdapter.create(Gelbooru.class);
-                tags = gelbooru.tag(200, 0, tag.trim().replace(' ', '_')).getTag();
-                break;
-            default:
-                tags = new ArrayList<>();
+                    Gelbooru gelbooru = restAdapter.create(Gelbooru.class);
+                    tags = gelbooru.tag(200, 0, tag.trim().replace(' ', '_')).execute().body().getTag();
+                    break;
+                default:
+                    tags = new ArrayList<>();
 
+            }
+
+            listTagDialog(tags);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        listTagDialog(tags);
     }
 
     @UiThread
@@ -1111,40 +1123,44 @@ public class MainActivity extends AppCompatActivity {
 
         String apiUri = preferences.provider().get();
 
-        RestAdapter.Builder restAdapter = new RestAdapter.Builder()
-                //.setLogLevel(RestAdapter.LogLevel.FULL)
-                .setEndpoint(apiUri);
+        Retrofit.Builder restAdapter = mBuilder.baseUrl(apiUri);
 
         switch (apiUri) {
             case Providers.ANIME_PICTURES_URI:
-                restAdapter.setClient(new OkClient() {
-
+                AnimePictures animePictures = restAdapter.build().create(AnimePictures.class);
+                animePictures.login(username, password,
+                        TimeZone.getDefault().getID()).enqueue(new Callback<AnimePicturesUser>() {
                     @Override
-                    public Response execute(Request request) throws IOException {
-                        Response response = super.execute(request);
-
-                        for (Header header : response.getHeaders()) {
-                            if (header.getValue().contains("_server=")) {
-                                String server = header.getValue().substring(0,
-                                        header.getValue().indexOf('='));
+                    public void onResponse(retrofit2.Call<AnimePicturesUser> call,
+                            Response<AnimePicturesUser> response) {
+                        try {
+                            AnimePicturesUser user = call.execute().body();
+                            Headers headers = response.headers();
+                            if (!headers.get("_server").isEmpty()) {
+                                String server = headers.get("_server");
                                 preferences.edit().animePicturesServer().put(server).apply();
                             }
-                        }
 
-                        return response;
+                            if (user.getSuccess()) {
+                                makeToast(R.string.login_success);
+                                preferences.edit()
+                                        .animePicturesToken()
+                                        .put(user.getToken())
+                                        .apply();
+                            } else {
+                                makeToast(R.string.login_failed);
+                                preferences.edit().animePicturesToken().put("").apply();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<AnimePicturesUser> call, Throwable t) {
+
                     }
                 });
-                AnimePictures animePictures = restAdapter.build().create(AnimePictures.class);
-                AnimePicturesUser user = animePictures.login(username, password,
-                        TimeZone.getDefault().getID());
-
-                if (user.getSuccess()) {
-                    makeToast(R.string.login_success);
-                    preferences.edit().animePicturesToken().put(user.getToken()).apply();
-                } else {
-                    makeToast(R.string.login_failed);
-                    preferences.edit().animePicturesToken().put("").apply();
-                }
 
                 break;
             default:
@@ -1268,104 +1284,104 @@ public class MainActivity extends AppCompatActivity {
     public void showImage(final int thumbnailLeft, final int thumbnailTop,
             final int thumbnailWidth, final int thumbnailHeight) {
 
-//        mOriginalOrientation = getResources().getConfiguration().orientation;
-//
-//        imageContainer.setClickable(false);
-//        imageContainer.setVisibility(View.VISIBLE);
-//
-//        ViewTreeObserver observer = imageContainer.getViewTreeObserver();
-//        observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-//
-//            @Override
-//            public boolean onPreDraw() {
-//                imageContainer.getViewTreeObserver().removeOnPreDrawListener(this);
-//
-//                // Figure out where the thumbnail and full size versions are, relative
-//                // to the screen and each other
-//                mLeftDelta = thumbnailLeft;
-//                mTopDelta = thumbnailTop;
-//
-//                // Scale factors to make the large version the same size as the thumbnail
-//
-//
-//                mWidthScale = (float) thumbnailWidth / imageContainer.getWidth();
-//                mHeightScale = (float) thumbnailHeight / imageContainer.getHeight();
-//
-//                runEnterAnimation();
-//
-//                return true;
-//            }
-//        });
+        //        mOriginalOrientation = getResources().getConfiguration().orientation;
+        //
+        //        imageContainer.setClickable(false);
+        //        imageContainer.setVisibility(View.VISIBLE);
+        //
+        //        ViewTreeObserver observer = imageContainer.getViewTreeObserver();
+        //        observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+        //
+        //            @Override
+        //            public boolean onPreDraw() {
+        //                imageContainer.getViewTreeObserver().removeOnPreDrawListener(this);
+        //
+        //                // Figure out where the thumbnail and full size versions are, relative
+        //                // to the screen and each other
+        //                mLeftDelta = thumbnailLeft;
+        //                mTopDelta = thumbnailTop;
+        //
+        //                // Scale factors to make the large version the same size as the thumbnail
+        //
+        //
+        //                mWidthScale = (float) thumbnailWidth / imageContainer.getWidth();
+        //                mHeightScale = (float) thumbnailHeight / imageContainer.getHeight();
+        //
+        //                runEnterAnimation();
+        //
+        //                return true;
+        //            }
+        //        });
     }
 
     private void runEnterAnimation() {
-//        final long duration = (long) (ANIM_DURATION * mAnimatorScale);
-//
-//        YoYo.with(new BaseViewAnimator() {
-//            @Override
-//            protected void prepare(View view) {
-//                this.getAnimatorAgent().playTogether(
-//                        ObjectAnimator.ofFloat(imageContainer, "pivotX", 0, 0),
-//                        ObjectAnimator.ofFloat(imageContainer, "pivotY", 0, 0),
-//                        ObjectAnimator.ofFloat(imageContainer, "scaleX", mWidthScale, 1.0F),
-//                        ObjectAnimator.ofFloat(imageContainer, "scaleY", mHeightScale, 1.0F),
-//                        ObjectAnimator.ofFloat(imageContainer, "translationX", mLeftDelta, 0),
-//                        ObjectAnimator.ofFloat(imageContainer, "translationY", mTopDelta, 0));
-//            }
-//        }).duration(duration).playOn(imageContainer);
-//
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                imageContainer.setClickable(true);
-//                imageContainer.setBackgroundColor(black);
-//            }
-//        }, ANIM_DURATION);
+        //        final long duration = (long) (ANIM_DURATION * mAnimatorScale);
+        //
+        //        YoYo.with(new BaseViewAnimator() {
+        //            @Override
+        //            protected void prepare(View view) {
+        //                this.getAnimatorAgent().playTogether(
+        //                        ObjectAnimator.ofFloat(imageContainer, "pivotX", 0, 0),
+        //                        ObjectAnimator.ofFloat(imageContainer, "pivotY", 0, 0),
+        //                        ObjectAnimator.ofFloat(imageContainer, "scaleX", mWidthScale, 1.0F),
+        //                        ObjectAnimator.ofFloat(imageContainer, "scaleY", mHeightScale, 1.0F),
+        //                        ObjectAnimator.ofFloat(imageContainer, "translationX", mLeftDelta, 0),
+        //                        ObjectAnimator.ofFloat(imageContainer, "translationY", mTopDelta, 0));
+        //            }
+        //        }).duration(duration).playOn(imageContainer);
+        //
+        //        handler.postDelayed(new Runnable() {
+        //            @Override
+        //            public void run() {
+        //                imageContainer.setClickable(true);
+        //                imageContainer.setBackgroundColor(black);
+        //            }
+        //        }, ANIM_DURATION);
     }
 
     private void runExitAnimation() {
-//        final long duration = (long) (ANIM_DURATION * mAnimatorScale);
-//
-//        final boolean fadeOut;
-//        if (getResources().getConfiguration().orientation != mOriginalOrientation) {
-//            imageContainer.setPivotX(imageContainer.getWidth() / 2);
-//            imageContainer.setPivotY(imageContainer.getHeight() / 2);
-//            mLeftDelta = 0;
-//            mTopDelta = 0;
-//            fadeOut = false;
-//        } else {
-//            fadeOut = true;
-//        }
-//
-//        imageContainer.setBackgroundColor(transparent);
-//
-//        if (fadeOut) {
-//            // Animate fullImage back to thumbnail size/location
-//
-//            YoYo.with(new BaseViewAnimator() {
-//                @Override
-//                protected void prepare(View view) {
-//                    this.getAnimatorAgent().playTogether(
-//                            ObjectAnimator.ofFloat(imageContainer, "pivotX", 0, 0),
-//                            ObjectAnimator.ofFloat(imageContainer, "pivotY", 0, 0),
-//                            ObjectAnimator.ofFloat(imageContainer, "scaleX", mWidthScale),
-//                            ObjectAnimator.ofFloat(imageContainer, "scaleY", mHeightScale),
-//                            ObjectAnimator.ofFloat(imageContainer, "translationX", mLeftDelta),
-//                            ObjectAnimator.ofFloat(imageContainer, "translationY", mTopDelta));
-//                }
-//            }).duration(duration).playOn(imageContainer);
-//
-//            handler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    imageContainer.setClickable(false);
-//                    imageContainer.setVisibility(View.GONE);
-//                }
-//            }, ANIM_DURATION);
-//        } else {
-//            imageContainer.setClickable(false);
-//            imageContainer.setVisibility(View.GONE);
-//        }
+        //        final long duration = (long) (ANIM_DURATION * mAnimatorScale);
+        //
+        //        final boolean fadeOut;
+        //        if (getResources().getConfiguration().orientation != mOriginalOrientation) {
+        //            imageContainer.setPivotX(imageContainer.getWidth() / 2);
+        //            imageContainer.setPivotY(imageContainer.getHeight() / 2);
+        //            mLeftDelta = 0;
+        //            mTopDelta = 0;
+        //            fadeOut = false;
+        //        } else {
+        //            fadeOut = true;
+        //        }
+        //
+        //        imageContainer.setBackgroundColor(transparent);
+        //
+        //        if (fadeOut) {
+        //            // Animate fullImage back to thumbnail size/location
+        //
+        //            YoYo.with(new BaseViewAnimator() {
+        //                @Override
+        //                protected void prepare(View view) {
+        //                    this.getAnimatorAgent().playTogether(
+        //                            ObjectAnimator.ofFloat(imageContainer, "pivotX", 0, 0),
+        //                            ObjectAnimator.ofFloat(imageContainer, "pivotY", 0, 0),
+        //                            ObjectAnimator.ofFloat(imageContainer, "scaleX", mWidthScale),
+        //                            ObjectAnimator.ofFloat(imageContainer, "scaleY", mHeightScale),
+        //                            ObjectAnimator.ofFloat(imageContainer, "translationX", mLeftDelta),
+        //                            ObjectAnimator.ofFloat(imageContainer, "translationY", mTopDelta));
+        //                }
+        //            }).duration(duration).playOn(imageContainer);
+        //
+        //            handler.postDelayed(new Runnable() {
+        //                @Override
+        //                public void run() {
+        //                    imageContainer.setClickable(false);
+        //                    imageContainer.setVisibility(View.GONE);
+        //                }
+        //            }, ANIM_DURATION);
+        //        } else {
+        //            imageContainer.setClickable(false);
+        //            imageContainer.setVisibility(View.GONE);
+        //        }
     }
 
     @UiThread
@@ -1392,8 +1408,8 @@ public class MainActivity extends AppCompatActivity {
         final int thumbnailWidth = to.getWidth();
         final int thumbnailHeight = to.getHeight();
 
-//        int height = target.getDrawable().getIntrinsicHeight();
-//        int width = target.getDrawable().getIntrinsicWidth();
+        //        int height = target.getDrawable().getIntrinsicHeight();
+        //        int width = target.getDrawable().getIntrinsicWidth();
         int height = ((Image) target.getTag()).getHeight().intValue();
         int width = ((Image) target.getTag()).getWidth().intValue();
 
@@ -1411,7 +1427,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
 
-                if (orientation == getRequestedOrientation() || orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                if (orientation == getRequestedOrientation()
+                        || orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
                     int animatedValue = (int) animation.getAnimatedValue();
 
                     if (lastAnimatedValue != animatedValue) {
@@ -1454,7 +1471,8 @@ public class MainActivity extends AppCompatActivity {
                                         (progress - animatedProgress) / progress) +
                                         thumbnailWidth;
                                 left =
-                                        (int) ((thumbnailLeft - fullLeft) * animatedProgress / progress) -
+                                        (int) ((thumbnailLeft - fullLeft) * animatedProgress
+                                                / progress) -
                                                 parent.getPaddingLeft();
 
                             } else if (!turn) {
@@ -1543,8 +1561,8 @@ public class MainActivity extends AppCompatActivity {
         target.setLeft(thumbnailLeft);
         target.setLayoutParams(layoutParams);
 
-//        int height = target.getDrawable().getIntrinsicHeight();
-//        int width = target.getDrawable().getIntrinsicWidth();
+        //        int height = target.getDrawable().getIntrinsicHeight();
+        //        int width = target.getDrawable().getIntrinsicWidth();
         int height = ((Image) target.getTag()).getHeight().intValue();
         int width = ((Image) target.getTag()).getWidth().intValue();
 
@@ -1579,7 +1597,8 @@ public class MainActivity extends AppCompatActivity {
                     int fullWidth = parent.getWidth();
                     int fullHeight = parent.getHeight();
 
-                    if (orientation == getRequestedOrientation() || orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                    if (orientation == getRequestedOrientation()
+                            || orientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
                         float animatedProgress = (float) animatedValue / ANIMATION_INT;
 
                         int left = (int) ((thumbnailLeft - fullLeft) * (1 - animatedProgress)) -
@@ -1683,7 +1702,8 @@ public class MainActivity extends AppCompatActivity {
         updateUrl = uri;
 
         updateDialog.setContent(getString(
-                R.string.new_version_available) + " \n" + name + " (" + Utils.humanReadableByteCount(
+                R.string.new_version_available) + " \n" + name + " ("
+                + Utils.humanReadableByteCount(
                 size, true) + ")");
         updateDialog.show();
     }
@@ -1696,14 +1716,14 @@ public class MainActivity extends AppCompatActivity {
     public void download(Image image, DownloadCallback callback) {
         try {
             File downloadedFile = new File(downloadDir, image.getName().replace('/', '-'));
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = OkHttp.getInstance().client();
 
             String apiUri = preferences.provider().get();
             if (apiUri.equals(Providers.BEHOIMI_URI)) {
                 client.interceptors().add(new Interceptor() {
                     @Override
-                    public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-                        com.squareup.okhttp.Request newRequest = chain.request().newBuilder()
+                    public okhttp3.Response intercept(Chain chain) throws IOException {
+                        okhttp3.Request newRequest = chain.request().newBuilder()
                                 .addHeader("Referer", Providers.BEHOIMI_URI + "/")
                                 .build();
                         return chain.proceed(newRequest);
@@ -1711,10 +1731,9 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
 
-            com.squareup.okhttp.Request request =
-                    new com.squareup.okhttp.Request.Builder().url(
-                            Utils.fixURL(image.getFileUrl())).build();
-            com.squareup.okhttp.Response response = client.newCall(request).execute();
+            okhttp3.Request request = new okhttp3.Request.Builder().url(
+                    Utils.fixURL(image.getFileUrl())).build();
+            okhttp3.Response response = client.newCall(request).execute();
             BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
             sink.writeAll(response.body().source());
             sink.close();
@@ -1731,7 +1750,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Background
     void downloadUpdate() {
 
@@ -1739,10 +1757,9 @@ public class MainActivity extends AppCompatActivity {
             showProgressDialog();
             File downloadedFile = new File(updateDir, updateFileName);
             OkHttpClient client = new OkHttpClient();
-            com.squareup.okhttp.Request request =
-                    new com.squareup.okhttp.Request.Builder().url(
-                            Utils.fixURL(updateUrl)).build();
-            com.squareup.okhttp.Response response = client.newCall(request).execute();
+            okhttp3.Request request = new okhttp3.Request.Builder().url(
+                    Utils.fixURL(updateUrl)).build();
+            okhttp3.Response response = client.newCall(request).execute();
             BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
             sink.writeAll(response.body().source());
             sink.close();
@@ -1750,7 +1767,8 @@ public class MainActivity extends AppCompatActivity {
             hideProgressDialog();
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(downloadedFile), "application/vnd.android.package-archive");
+            intent.setDataAndType(Uri.fromFile(downloadedFile),
+                    "application/vnd.android.package-archive");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
 

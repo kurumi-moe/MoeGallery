@@ -15,3 +15,26 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-dontwarn rx.**
+-dontwarn com.rey.**
+-dontwarn okio.**
+-dontwarn retrofit2.Platform$Java8
+-dontwarn org.springframework.**
+-dontwarn org.simpleframework.xml.stream.**
+
+-dontwarn com.squareup.okhttp.*
+
+-dontwarn retrofit.appengine.UrlFetchClient
+
+-keepattributes *Annotation*
+
+-keep class retrofit2.** { *; }
+
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+
+-keepattributes Signature
+
+-keep public class moe.kurumi.moegallery.model.*
+
