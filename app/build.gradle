@@ -10,6 +10,7 @@ def gitTagCount = Integer.parseInt('git rev-list --tags --no-walk --count'
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
     dependencies {
         // replace with the current version of the Android plugin
