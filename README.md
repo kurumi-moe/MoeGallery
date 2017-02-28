@@ -2,7 +2,6 @@
 An android gallery to view anime images from online resources
 
 [![Build Status](https://travis-ci.org/kurumi-moe/MoeGallery.svg?branch=master)](https://travis-ci.org/kurumi-moe/MoeGallery)
-
 [![Download Status](https://img.shields.io/github/downloads/kurumi-moe/MoeGallery/v1.1.0/total.svg)](https://github.com/kurumi-moe/MoeGallery/releases/download/v1.1.0/MoeGallery-v1.1.0.apk)
 
 ##WARNING
@@ -59,7 +58,10 @@ An android gallery to view anime images from online resources
 5\. Share this application to your friends
 
 ##Contributors
+
 [kurumi](http://kurumi.moe)
+
+[Alez Boom](alejandroalebenm#gmail.com) Spanish translation.
 
 ##Thanks to
 
