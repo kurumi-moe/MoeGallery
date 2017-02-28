@@ -38,9 +38,6 @@ deploy:
   on:
     tags: true
     
-after_success:
-  - ./gradlew cobertura coveralls
-
 env:
   global:
     # GITHUB_TOKEN
