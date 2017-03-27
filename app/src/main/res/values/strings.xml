@@ -71,4 +71,10 @@
     <string name="version_key" translatable="false">version</string>
     <string name="new_version">New version</string>
     <string name="new_version_available">New version available, update now?</string>
+    <string name="anime_pictures_server_key" translatable="false">anime_pictures_server</string>
+    <string name="anime_pictures_token_key" translatable="false">anime_pictures_token</string>
+    <string name="last_update_key" translatable="false">last_update</string>
+    <string name="auto_rotate_key" translatable="false">auto_rotate_key</string>
+    <string name="auto_rotate_summary">Auto rotate screen by image size</string>
+    <string name="auto_rotate">Auto rotate</string>
 </resources>

@@ -1,5 +1,6 @@
 package moe.kurumi.moegallery.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,8 +11,13 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -20,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -47,18 +54,6 @@ import com.nineoldandroids.animation.ValueAnimator;
 import com.raizlabs.android.dbflow.sql.builder.Condition;
 import com.raizlabs.android.dbflow.sql.language.Select;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.OptionsMenuItem;
-import org.androidannotations.annotations.UiThread;
-import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.ColorRes;
-import org.androidannotations.annotations.res.StringArrayRes;
-import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.apmem.tools.layouts.FlowLayout;
 
 import java.io.File;
@@ -68,111 +63,87 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.inject.Inject;
+
 import moe.kurumi.moegallery.R;
+import moe.kurumi.moegallery.application.Application;
+import moe.kurumi.moegallery.data.ImageDataSource;
+import moe.kurumi.moegallery.data.Providers;
+import moe.kurumi.moegallery.di.DaggerMainComponent;
+import moe.kurumi.moegallery.di.modules.AppModule;
+import moe.kurumi.moegallery.di.modules.MainModule;
 import moe.kurumi.moegallery.model.AnimePictures;
+import moe.kurumi.moegallery.model.AnimePicturesList;
 import moe.kurumi.moegallery.model.AnimePicturesUser;
-import moe.kurumi.moegallery.model.Behoimi;
 import moe.kurumi.moegallery.model.Config;
-import moe.kurumi.moegallery.model.Danbooru;
-import moe.kurumi.moegallery.model.DanbooruTag;
-import moe.kurumi.moegallery.model.Gelbooru;
 import moe.kurumi.moegallery.model.Github;
 import moe.kurumi.moegallery.model.GithubRelease;
 import moe.kurumi.moegallery.model.Image;
-import moe.kurumi.moegallery.model.Moebooru;
-import moe.kurumi.moegallery.model.Preferences_;
 import moe.kurumi.moegallery.model.Tag;
 import moe.kurumi.moegallery.model.Version;
 import moe.kurumi.moegallery.model.database.FavoriteImage;
 import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
 import moe.kurumi.moegallery.model.database.HistoryTag;
 import moe.kurumi.moegallery.model.database.HistoryTag$Table;
-import moe.kurumi.moegallery.provider.Providers;
+import moe.kurumi.moegallery.model.setting.Setting;
 import moe.kurumi.moegallery.utils.OkHttp;
 import moe.kurumi.moegallery.utils.Utils;
-import moe.kurumi.moegallery.view.adapter.ImageAdapter;
-import moe.kurumi.moegallery.view.adapter.RecyclerViewAdapterBase;
+import moe.kurumi.moegallery.view.ViewPager;
+import moe.kurumi.moegallery.view.adapter.GalleryAdapter;
+import moe.kurumi.moegallery.view.adapter.PagerAdapter;
 import okhttp3.Headers;
 import okhttp3.Interceptor;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 import okio.BufferedSink;
 import okio.Okio;
-
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
-import uk.co.senab.photoview.PhotoViewAttacher;
+import rx.Observable;
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
-/**
- * Created by kurumi on 15-5-28.
- */
-@EActivity(R.layout.activity_main)
-@OptionsMenu(R.menu.menu_main)
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements android.support.v4.view.ViewPager.OnPageChangeListener,
+        GalleryAdapter.OnRecyclerListener {
 
-    public final static String TAG = "MainActivity";
+    public final static String TAG = MainActivity.class.getSimpleName();
+
+    private static final int WRITE_STORAGE = 0x1;
+    private static final int READ_STORAGE = 0x2;
+
     private final static int ANIMATION_INT = 100;
     private final static int ANIMATION_DURATION = 300;
-
-    @ViewById
     DrawerLayout drawerLayout;
-    @ViewById
     ListView leftDrawerList;
-    @ViewById
     LinearLayout rightDrawer;
-    @ViewById
     ListView rightDrawerList;
-    @ViewById
     Toolbar toolbar;
-    @ViewById
     RecyclerView recyclerView;
-    @ViewById(R.id.image)
-    ImageView fullImage;
-    @ViewById(R.id.image_container)
+    ViewPager viewPager;
     FrameLayout imageContainer;
-    @ViewById
     ImageButton home;
-    @ViewById
     TextView history;
-    @ViewById
     TextView favorite;
-
-    @ViewById
     ButtonFloat floatSearch;
-
-    @ViewById
     ButtonFloat floatFavorite;
-
-    @StringArrayRes(R.array.provider_names)
     String[] providerNames;
-    @StringArrayRes(R.array.provider_values)
     String[] providerValues;
-    @Bean
-    ImageAdapter imageAdapter;
-    @Pref
-    Preferences_ preferences;
-
-    @OptionsMenuItem(R.id.search)
+    GalleryAdapter mGalleryAdapter;
+    @Inject
+    Setting mSetting;
+    @Inject
+    ImageDataSource mDataSource;
     MenuItem menuSearch;
-    @OptionsMenuItem(R.id.info)
     MenuItem menuInfo;
-    @OptionsMenuItem(R.id.set_wallpaper)
     MenuItem menuWallpaper;
-    @OptionsMenuItem(R.id.download)
     MenuItem menuDownload;
-    @OptionsMenuItem(R.id.favorite)
     MenuItem menuFavorite;
-
-    @OptionsMenuItem(R.id.share)
     MenuItem menuShare;
-
     AlertDialog dialog;
-
-    @ColorRes
     int transparent;
-    @ColorRes
     int black;
     File downloadDir;
     File updateDir;
@@ -180,6 +151,8 @@ public class MainActivity extends AppCompatActivity {
     float favoriteShowPosition;
     float favoriteHidePosition;
     int favoriteRightMargin;
+    @Inject
+    Retrofit.Builder mBuilder;
     private ArrayAdapter providerAdapter;
     private ArrayAdapter historyTagsAdapter;
     private String providerUri;
@@ -188,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
     private String tags = "";
     private String title = "";
     private ArrayList<String> historyTags = new ArrayList<>();
-    private PhotoViewAttacher photoViewAttacher;
     private int lastAnimatedValue = -1;
     private boolean turn = false;
     private float turnProgress;
@@ -199,23 +171,53 @@ public class MainActivity extends AppCompatActivity {
     private MaterialDialog updateDialog;
     private boolean isInHistoryMode = false;
     private boolean isInFavoriteMode = false;
-
     private String updateUrl = "";
     private String updateFileName = "";
+    private PagerAdapter mPagerAdapter;
+    private TouchEventListener mTouchEventListener;
 
-    private Retrofit.Builder mBuilder;
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-    @AfterViews
+        DaggerMainComponent.builder()
+                .appModule(new AppModule(Application.getApplication()))
+                .mainModule(new MainModule(this))
+                .build()
+                .inject(this);
+
+        setContentView(R.layout.activity_main);
+        bindViews();
+        bindAdapter();
+    }
+
+    void bindViews() {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        leftDrawerList = (ListView) findViewById(R.id.left_drawer_list);
+        rightDrawer = (LinearLayout) findViewById(R.id.right_drawer);
+        rightDrawerList = (ListView) findViewById(R.id.right_drawer_list);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        viewPager = (ViewPager) findViewById(R.id.full_image_container);
+        imageContainer = (FrameLayout) findViewById(R.id.image_container);
+        home = (ImageButton) findViewById(R.id.home);
+        history = (TextView) findViewById(R.id.history);
+        favorite = (TextView) findViewById(R.id.favorite);
+        floatSearch = (ButtonFloat) findViewById(R.id.float_search);
+        floatFavorite = (ButtonFloat) findViewById(R.id.float_favorite);
+
+        providerNames = getResources().getStringArray(R.array.provider_names);
+        providerValues = getResources().getStringArray(R.array.provider_values);
+
+        transparent = getResources().getColor(R.color.transparent);
+        black = getResources().getColor(R.color.black);
+    }
+
     void bindAdapter() {
 
         setSupportActionBar(toolbar);
 
-        downloadDir = new File(Environment.getExternalStorageDirectory().getPath(), "MoeGallery");
         updateDir = new File(Environment.getExternalStorageDirectory().getPath(), "Downloads");
-
-        if (!downloadDir.exists()) {
-            downloadDir.mkdir();
-        }
 
         if (!updateDir.exists()) {
             updateDir.mkdir();
@@ -251,23 +253,6 @@ public class MainActivity extends AppCompatActivity {
 
         showProgressDialog();
 
-        photoViewAttacher = new PhotoViewAttacher(fullImage);
-
-        photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
-        photoViewAttacher.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
-            @Override
-            public void onViewTap(View view, float x, float y) {
-                if (!isSystemUIVisible()) {
-                    showSystemUI();
-                    hideSystemUIDelayed(3000);
-                    showFavorite();
-                } else {
-                    hideSystemUIDelayed(0);
-                }
-            }
-        });
-
         drawerLayout.setStatusBarBackgroundColor(
                 getResources().getColor(R.color.actionbar_background));
 
@@ -279,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 providerUri = providerValues[position];
-                preferences.edit().provider().put(providerUri).apply();
+                mSetting.setProvider(providerUri);
                 drawerLayout.closeDrawers();
                 setDefaultTitle();
                 clearModes();
@@ -310,9 +295,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        providerUri = preferences.provider().get();
+        providerUri = mSetting.provider();
 
-        recyclerView.setAdapter(imageAdapter);
+        mGalleryAdapter = new GalleryAdapter(this);
+        mGalleryAdapter.setRecyclerListener(this);
+
+        recyclerView.setAdapter(mGalleryAdapter);
         final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(gridLayoutManager);
 
@@ -332,9 +320,8 @@ public class MainActivity extends AppCompatActivity {
 
                     // load more
                     if (lastPosition
-                            == ((RecyclerViewAdapterBase) recyclerView.getAdapter()).getNextCount()
-                            - 1) {
-                        ((RecyclerViewAdapterBase) recyclerView.getAdapter()).loadNextPage(tags);
+                            == ((GalleryAdapter) recyclerView.getAdapter()).getNextCount() - 1) {
+                        ((GalleryAdapter) recyclerView.getAdapter()).loadNextPage(tags);
                     }
                 }
             }
@@ -362,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
                                     R.string.history) + ")");
                     reloadFromHistory();
                 } else {
-                    providerUri = preferences.provider().get();
+                    providerUri = mSetting.provider();
                     setDefaultTitle();
                     reload();
 
@@ -385,7 +372,7 @@ public class MainActivity extends AppCompatActivity {
                                     R.string.favorite) + ")");
                     reloadFromFavorite();
                 } else {
-                    providerUri = preferences.provider().get();
+                    providerUri = mSetting.provider();
                     setDefaultTitle();
                     reload();
 
@@ -410,6 +397,10 @@ public class MainActivity extends AppCompatActivity {
                 switchFavorite();
             }
         });
+
+        mPagerAdapter = new PagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(mPagerAdapter);
+        viewPager.addOnPageChangeListener(this);
     }
 
     private void clearModes() {
@@ -421,7 +412,7 @@ public class MainActivity extends AppCompatActivity {
 
     @UiThread
     public void clearHistoryMode() {
-        providerUri = preferences.provider().get();
+        providerUri = mSetting.provider();
         setDefaultTitle();
         isInHistoryMode = false;
         history.setTextColor(getResources().getColor(android.R.color.white));
@@ -430,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
 
     @UiThread
     public void clearFavoriteMode() {
-        providerUri = preferences.provider().get();
+        providerUri = mSetting.provider();
         setDefaultTitle();
         isInFavoriteMode = false;
         favorite.setTextColor(getResources().getColor(android.R.color.white));
@@ -439,24 +430,28 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (fullImage.getVisibility() != View.GONE) {
+        if (viewPager.getVisibility() != View.GONE) {
             hideImage();
             hideFavorite();
+
+            if (!floatSearch.isShow) {
+                floatSearch.show();
+            }
         } else {
             super.onBackPressed();
         }
     }
 
     private void hideFavorite() {
-        if (preferences.floatFavorite().get()) {
+        if (mSetting.floatFavorite()) {
             if (floatFavorite.isShow()) {
                 floatFavorite.hide();
             }
         }
     }
 
-    private void showFavorite() {
-        if (preferences.floatFavorite().get()) {
+    public void showFavorite() {
+        if (mSetting.floatFavorite()) {
             floatFavorite.setVisibility(View.VISIBLE);
 
             if (!floatFavorite.isShow()) {
@@ -483,11 +478,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         View view = recyclerView.findViewWithTag(currentImage);
-        runExitAnimation(fullImage, view, orientation);
+        runExitAnimation(viewPager, view, orientation);
         if (floatSearch.getVisibility() == View.VISIBLE) {
             floatSearch.show();
         }
         //fullImage.setVisibility(View.GONE);
+    }
+
+    public Image getCurrentImage() {
+        return currentImage;
     }
 
     public void setCurrentImage(Image image) {
@@ -495,19 +494,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setMenu(boolean isMain) {
-        menuSearch.setVisible(isMain && !preferences.floatSearch().get());
+        menuSearch.setVisible(isMain && !mSetting.floatSearch());
         menuInfo.setVisible(!isMain);
         menuWallpaper.setVisible(!isMain);
         menuShare.setVisible(!isMain);
-        menuDownload.setVisible(!isMain && !preferences.autoDownload().get());
+        menuDownload.setVisible(!isMain && !mSetting.autoDownload());
 
-        menuFavorite.setVisible(!isMain && !preferences.floatFavorite().get());
+        menuFavorite.setVisible(!isMain && !mSetting.floatFavorite());
 
         if (!isMain) {
-            Image image = (Image) this.fullImage.getTag();
             List<FavoriteImage> favoriteImages = new Select().from(FavoriteImage.class).where(
-                    Condition.column(FavoriteImage$Table.PREVIEWURL).eq(image.getPreviewUrl())).
-                    queryList();
+                    Condition.column(FavoriteImage$Table.PREVIEWURL)
+                            .eq(currentImage.getPreviewUrl())).queryList();
 
             if (favoriteImages.size() == 1) {
                 menuFavorite.setTitle(R.string.remove_favorite);
@@ -554,7 +552,17 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        boolean isFloatSearch = preferences.floatSearch().get();
+
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        menuSearch = menu.findItem(R.id.search);
+        menuInfo = menu.findItem(R.id.info);
+        menuWallpaper = menu.findItem(R.id.set_wallpaper);
+        menuDownload = menu.findItem(R.id.download);
+        menuFavorite = menu.findItem(R.id.favorite);
+        menuShare = menu.findItem(R.id.share);
+
+        boolean isFloatSearch = mSetting.floatSearch();
         floatSearch.setVisibility(isFloatSearch ? View.VISIBLE : View.INVISIBLE);
         if (menuSearch != null) {
             menuSearch.setVisible(!isFloatSearch);
@@ -567,15 +575,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-        OkHttpClient client = OkHttp.getInstance().client();
-        mBuilder = new Retrofit.Builder()
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .addConverterFactory(SimpleXmlConverterFactory.create());
+        if (providerUri != null && !providerUri.equals(mSetting.provider())) {
 
-        if (providerUri != null && !providerUri.equals(preferences.provider().get())) {
-
-            providerUri = preferences.provider().get();
+            providerUri = mSetting.provider();
 
             if (isInHistoryMode) {
                 reloadFromHistory();
@@ -592,15 +594,15 @@ public class MainActivity extends AppCompatActivity {
                             android.R.color.white));
         }
 
-        if (fullImage.getVisibility() == View.GONE) {
+        if (viewPager.getVisibility() == View.GONE) {
             setDefaultTitle();
-            boolean isFloatSearch = preferences.floatSearch().get();
+            boolean isFloatSearch = mSetting.floatSearch();
             floatSearch.setVisibility(isFloatSearch ? View.VISIBLE : View.INVISIBLE);
             if (menuSearch != null) {
                 menuSearch.setVisible(!isFloatSearch);
             }
         } else {
-            boolean isFloatFavorite = preferences.floatFavorite().get();
+            boolean isFloatFavorite = mSetting.floatFavorite();
             floatFavorite.setVisibility(isFloatFavorite ? View.VISIBLE : View.INVISIBLE);
             if (menuFavorite != null) {
                 menuFavorite.setVisible(!isFloatFavorite);
@@ -610,41 +612,47 @@ public class MainActivity extends AppCompatActivity {
         checkUpdate();
     }
 
-    @Background
     void checkUpdate() {
-        long lastUpdate = preferences.lastUpdate().get();
 
-        if (System.currentTimeMillis() - lastUpdate > Config.UPDATE_DURATION) {
-            try {
-                Retrofit restAdapter = mBuilder.baseUrl(Providers.GITHUB_API_URI).build();
-                Github github = restAdapter.create(Github.class);
-                GithubRelease latest = github.latest().execute().body();
+        Observable.<Void>just(null).observeOn(Schedulers.io()).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                long lastUpdate = mSetting.lastUpdate();
 
-                PackageManager packageManager = getPackageManager();
-                String versionString =
-                        packageManager.getPackageInfo(getPackageName(), 0).versionName;
+                if (System.currentTimeMillis() - lastUpdate > Config.UPDATE_DURATION) {
+                    try {
+                        Retrofit restAdapter = mBuilder.baseUrl(Providers.GITHUB_API_URI).build();
+                        Github github = restAdapter.create(Github.class);
+                        GithubRelease latest = github.latest().execute().body();
 
-                Version currentVersion = new Version(versionString);
-                Version latestVersion = new Version(latest.getTagName().substring(1));
+                        PackageManager packageManager = getPackageManager();
+                        String versionString =
+                                packageManager.getPackageInfo(getPackageName(), 0).versionName;
 
-                if (latestVersion.compareTo(currentVersion) > 0 &&
-                        !latest.getPrerelease() &&
-                        latest.getAuthor().getLogin().equals(Config.GITHUB_UPDATE_AUTHOR)) {
+                        Version currentVersion = new Version(versionString);
+                        Version latestVersion = new Version(latest.getTagName().substring(1));
 
-                    for (GithubRelease.Asset asset : latest.getAssets()) {
+                        if (latestVersion.compareTo(currentVersion) > 0 &&
+                                !latest.getPrerelease() &&
+                                latest.getAuthor().getLogin().equals(Config.GITHUB_UPDATE_AUTHOR)) {
 
-                        if (asset.getContentType().equals(Config.GITHUB_UPDATE_CONTENT_TYPE) &&
-                                asset.getState().equals(Config.GITHUB_UPDATE_STATUS)) {
-                            showUpdateDialog(asset.getName(), asset.getSize(),
-                                    asset.getBrowserDownloadUrl());
-                            preferences.edit().lastUpdate().put(System.currentTimeMillis());
+                            for (GithubRelease.Asset asset : latest.getAssets()) {
+
+                                if (asset.getContentType().equals(Config.GITHUB_UPDATE_CONTENT_TYPE)
+                                        &&
+                                        asset.getState().equals(Config.GITHUB_UPDATE_STATUS)) {
+                                    showUpdateDialog(asset.getName(), asset.getSize(),
+                                            asset.getBrowserDownloadUrl());
+                                    mSetting.setLastUpdate(System.currentTimeMillis());
+                                }
+                            }
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        }
+        });
     }
 
     @Override
@@ -706,30 +714,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @OptionsItem(R.id.settings)
     void launchSettings() {
-        SettingsActivity_.intent(this).start();
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
-    @UiThread
-    public void setImageUri(Uri uri) {
-        currentImageUri = uri;
-        if (uri != null && fullImage.getVisibility() == View.VISIBLE) {
-            menuWallpaper.setVisible(true);
-            menuShare.setVisible(true);
-            menuDownload.setVisible(false);
-        } else {
-            menuWallpaper.setVisible(false);
-            menuShare.setVisible(false);
-        }
-
-        if (uri == null && fullImage.getVisibility() == View.VISIBLE &&
-                !preferences.autoDownload().get()) {
-            menuDownload.setVisible(true);
-        }
-    }
-
-    @OptionsItem(R.id.set_wallpaper)
     void setWallpaper() {
         Intent intent = new Intent(Intent.ACTION_ATTACH_DATA);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -738,7 +726,6 @@ public class MainActivity extends AppCompatActivity {
         this.startActivity(Intent.createChooser(intent, getResources().getString(R.string.set_as)));
     }
 
-    @OptionsItem(R.id.share)
     void share() {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
@@ -747,9 +734,12 @@ public class MainActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.share)));
     }
 
-    @OptionsItem(R.id.info)
     void showDetails() {
-        Image image = (Image) this.fullImage.getTag();
+        Image image = currentImage;
+
+        if (mDataSource.getCachedDetail(image.getFileUrl()) != null) {
+            image = mDataSource.getCachedDetail(image.getFileUrl());
+        }
 
         View detailsView = getLayoutInflater().inflate(R.layout.details,
                 (ViewGroup) findViewById(android.R.id.content), false);
@@ -826,10 +816,9 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    @OptionsItem(R.id.download)
     void downloadImage() {
         showProgressDialog();
-        Image image = (Image) this.fullImage.getTag();
+        Image image = currentImage;
         download(image, new DownloadCallback() {
             @Override
             public void onSucceed(Image image, File file) {
@@ -847,9 +836,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    @OptionsItem(R.id.favorite)
     void switchFavorite() {
-        Image image = (Image) this.fullImage.getTag();
+        Image image = currentImage;
         List<FavoriteImage> favoriteImages = new Select().from(FavoriteImage.class).where(
                 Condition.column(FavoriteImage$Table.PREVIEWURL).eq(image.getPreviewUrl())).
                 queryList();
@@ -904,24 +892,53 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        imageAdapter.reload(tags);
+        mGalleryAdapter.reload(tags);
     }
 
     @UiThread
     void reloadFromHistory() {
         isInFavoriteMode = false;
         favorite.setTextColor(getResources().getColor(android.R.color.white));
-        imageAdapter.reloadFromHistory();
+        mGalleryAdapter.reloadFromHistory();
     }
 
     @UiThread
     void reloadFromFavorite() {
         isInHistoryMode = false;
         history.setTextColor(getResources().getColor(android.R.color.white));
-        imageAdapter.reloadFromFavorite();
+        mGalleryAdapter.reloadFromFavorite();
     }
 
-    @OptionsItem(R.id.search)
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.search:
+                search();
+                break;
+            case R.id.favorite:
+                switchFavorite();
+                break;
+            case R.id.download:
+                downloadImage();
+                break;
+            case R.id.share:
+                share();
+                break;
+            case R.id.set_wallpaper:
+                setWallpaper();
+                break;
+            case R.id.info:
+                showDetails();
+                break;
+            case R.id.settings:
+                launchSettings();
+                break;
+        }
+
+        return true;
+    }
+
     void search() {
 
         View searchView = getLayoutInflater().inflate(R.layout.search_box,
@@ -958,7 +975,18 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 showProgressDialog();
                                 tags = searchText.getText().toString();
-                                listTag(tags);
+                                mDataSource.listTag(tags)
+                                        .subscribe(new Action1<List<? extends Tag>>() {
+                                            @Override
+                                            public void call(List<? extends Tag> tags) {
+                                                listTagDialog(tags);
+                                            }
+                                        }, new Action1<Throwable>() {
+                                            @Override
+                                            public void call(Throwable throwable) {
+                                                showErrorDialog(throwable.getMessage());
+                                            }
+                                        });
                             }
                         });
 
@@ -966,62 +994,6 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    @Background
-    public void listTag(String tag) {
-
-        try {
-            String apiUri = preferences.provider().get();
-
-            List<? extends Tag> tags;
-
-            Retrofit restAdapter = mBuilder
-                    .baseUrl(apiUri)
-                    //.setLogLevel(RestAdapter.LogLevel.FULL)
-                    .build();
-
-            switch (apiUri) {
-                case Providers.KONACHAN_URI:
-                case Providers.YANDERE_URI:
-                    Moebooru moebooru = restAdapter.create(Moebooru.class);
-                    tags = moebooru.tag(tag.trim().replace(' ', '_')).execute().body();
-                    break;
-                case Providers.DANBOORU_URI:
-                    Danbooru danbooru = restAdapter.create(Danbooru.class);
-                    List<DanbooruTag> tagsStart = danbooru.tag("*" + tag.trim()).execute().body();
-                    List<DanbooruTag> tagsEnd = danbooru.tag(tag.trim() + "*").execute().body();
-                    tagsStart.addAll(tagsEnd);
-                    tags = tagsStart;
-                    break;
-                case Providers.BEHOIMI_URI:
-                    Behoimi behoimi = restAdapter.create(Behoimi.class);
-                    tags = behoimi.tag("*" + tag.trim().replace(' ', '_') + "*").execute().body();
-                    break;
-                case Providers.ANIME_PICTURES_URI:
-                    AnimePictures animePictures = restAdapter.create(AnimePictures.class);
-                    tags = animePictures.tag(tag).execute().body().getTagsList();
-                    break;
-                case Providers.GELBOORU_URI:
-
-                    restAdapter = mBuilder
-                            .baseUrl(apiUri)
-                            //.setLogLevel(RestAdapter.LogLevel.FULL)
-                            .build();
-
-                    Gelbooru gelbooru = restAdapter.create(Gelbooru.class);
-                    tags = gelbooru.tag(200, 0, tag.trim().replace(' ', '_')).execute().body().getTag();
-                    break;
-                default:
-                    tags = new ArrayList<>();
-
-            }
-
-            listTagDialog(tags);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @UiThread
     public void listTagDialog(final List<? extends Tag> tagList) {
 
         hideProgressDialog();
@@ -1072,7 +1044,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
-    @UiThread
     public void login() {
         View loginView = getLayoutInflater().inflate(R.layout.login,
                 (ViewGroup) findViewById(android.R.id.content), false);
@@ -1118,49 +1089,60 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    @Background
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mSetting.autoDownload()) {
+            askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+            askForPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_STORAGE);
+        }
+    }
+
     public void login(String username, String password) {
 
-        String apiUri = preferences.provider().get();
+        String apiUri = mSetting.provider();
 
         Retrofit.Builder restAdapter = mBuilder.baseUrl(apiUri);
 
         switch (apiUri) {
             case Providers.ANIME_PICTURES_URI:
                 AnimePictures animePictures = restAdapter.build().create(AnimePictures.class);
-                animePictures.login(username, password,
-                        TimeZone.getDefault().getID()).enqueue(new Callback<AnimePicturesUser>() {
-                    @Override
-                    public void onResponse(retrofit2.Call<AnimePicturesUser> call,
-                            Response<AnimePicturesUser> response) {
-                        try {
-                            AnimePicturesUser user = call.execute().body();
-                            Headers headers = response.headers();
-                            if (!headers.get("_server").isEmpty()) {
-                                String server = headers.get("_server");
-                                preferences.edit().animePicturesServer().put(server).apply();
+                animePictures.login(RequestBody.create(MediaType.parse("text/plain"), username),
+                        RequestBody.create(MediaType.parse("text/plain"), password),
+                        RequestBody.create(MediaType.parse("text/plain"),
+                                TimeZone.getDefault().getID()))
+                        .enqueue(new Callback<AnimePicturesUser>() {
+                            @Override
+                            public void onResponse(retrofit2.Call<AnimePicturesUser> call,
+                                    Response<AnimePicturesUser> response) {
+                                try {
+                                    AnimePicturesUser user = response.body();
+
+                                    if (user.getSuccess()) {
+                                        makeToast(R.string.login_success);
+                                        mSetting.setAnimePicturesToken(user.getToken());
+                                    } else {
+                                        makeToast(R.string.login_failed);
+                                        mSetting.setAnimePicturesToken("");
+                                    }
+
+                                    Headers headers = response.headers();
+                                    if (!headers.get("_server").isEmpty()) {
+                                        String server = headers.get("_server");
+                                        mSetting.setAnimePicturesServer(server);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
 
-                            if (user.getSuccess()) {
-                                makeToast(R.string.login_success);
-                                preferences.edit()
-                                        .animePicturesToken()
-                                        .put(user.getToken())
-                                        .apply();
-                            } else {
-                                makeToast(R.string.login_failed);
-                                preferences.edit().animePicturesToken().put("").apply();
+                            @Override
+                            public void onFailure(retrofit2.Call<AnimePicturesUser> call,
+                                    Throwable t) {
+
                             }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(retrofit2.Call<AnimePicturesUser> call, Throwable t) {
-
-                    }
-                });
+                        });
 
                 break;
             default:
@@ -1264,7 +1246,7 @@ public class MainActivity extends AppCompatActivity {
                             android.R.anim.fade_out;
                     progressDialog.dismiss();
 
-                    if (fullImage.getVisibility() == View.VISIBLE) {
+                    if (viewPager.getVisibility() == View.VISIBLE) {
                         hideSystemUI();
                     }
                 }
@@ -1283,109 +1265,10 @@ public class MainActivity extends AppCompatActivity {
     @UiThread
     public void showImage(final int thumbnailLeft, final int thumbnailTop,
             final int thumbnailWidth, final int thumbnailHeight) {
-
-        //        mOriginalOrientation = getResources().getConfiguration().orientation;
-        //
-        //        imageContainer.setClickable(false);
-        //        imageContainer.setVisibility(View.VISIBLE);
-        //
-        //        ViewTreeObserver observer = imageContainer.getViewTreeObserver();
-        //        observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-        //
-        //            @Override
-        //            public boolean onPreDraw() {
-        //                imageContainer.getViewTreeObserver().removeOnPreDrawListener(this);
-        //
-        //                // Figure out where the thumbnail and full size versions are, relative
-        //                // to the screen and each other
-        //                mLeftDelta = thumbnailLeft;
-        //                mTopDelta = thumbnailTop;
-        //
-        //                // Scale factors to make the large version the same size as the thumbnail
-        //
-        //
-        //                mWidthScale = (float) thumbnailWidth / imageContainer.getWidth();
-        //                mHeightScale = (float) thumbnailHeight / imageContainer.getHeight();
-        //
-        //                runEnterAnimation();
-        //
-        //                return true;
-        //            }
-        //        });
-    }
-
-    private void runEnterAnimation() {
-        //        final long duration = (long) (ANIM_DURATION * mAnimatorScale);
-        //
-        //        YoYo.with(new BaseViewAnimator() {
-        //            @Override
-        //            protected void prepare(View view) {
-        //                this.getAnimatorAgent().playTogether(
-        //                        ObjectAnimator.ofFloat(imageContainer, "pivotX", 0, 0),
-        //                        ObjectAnimator.ofFloat(imageContainer, "pivotY", 0, 0),
-        //                        ObjectAnimator.ofFloat(imageContainer, "scaleX", mWidthScale, 1.0F),
-        //                        ObjectAnimator.ofFloat(imageContainer, "scaleY", mHeightScale, 1.0F),
-        //                        ObjectAnimator.ofFloat(imageContainer, "translationX", mLeftDelta, 0),
-        //                        ObjectAnimator.ofFloat(imageContainer, "translationY", mTopDelta, 0));
-        //            }
-        //        }).duration(duration).playOn(imageContainer);
-        //
-        //        handler.postDelayed(new Runnable() {
-        //            @Override
-        //            public void run() {
-        //                imageContainer.setClickable(true);
-        //                imageContainer.setBackgroundColor(black);
-        //            }
-        //        }, ANIM_DURATION);
-    }
-
-    private void runExitAnimation() {
-        //        final long duration = (long) (ANIM_DURATION * mAnimatorScale);
-        //
-        //        final boolean fadeOut;
-        //        if (getResources().getConfiguration().orientation != mOriginalOrientation) {
-        //            imageContainer.setPivotX(imageContainer.getWidth() / 2);
-        //            imageContainer.setPivotY(imageContainer.getHeight() / 2);
-        //            mLeftDelta = 0;
-        //            mTopDelta = 0;
-        //            fadeOut = false;
-        //        } else {
-        //            fadeOut = true;
-        //        }
-        //
-        //        imageContainer.setBackgroundColor(transparent);
-        //
-        //        if (fadeOut) {
-        //            // Animate fullImage back to thumbnail size/location
-        //
-        //            YoYo.with(new BaseViewAnimator() {
-        //                @Override
-        //                protected void prepare(View view) {
-        //                    this.getAnimatorAgent().playTogether(
-        //                            ObjectAnimator.ofFloat(imageContainer, "pivotX", 0, 0),
-        //                            ObjectAnimator.ofFloat(imageContainer, "pivotY", 0, 0),
-        //                            ObjectAnimator.ofFloat(imageContainer, "scaleX", mWidthScale),
-        //                            ObjectAnimator.ofFloat(imageContainer, "scaleY", mHeightScale),
-        //                            ObjectAnimator.ofFloat(imageContainer, "translationX", mLeftDelta),
-        //                            ObjectAnimator.ofFloat(imageContainer, "translationY", mTopDelta));
-        //                }
-        //            }).duration(duration).playOn(imageContainer);
-        //
-        //            handler.postDelayed(new Runnable() {
-        //                @Override
-        //                public void run() {
-        //                    imageContainer.setClickable(false);
-        //                    imageContainer.setVisibility(View.GONE);
-        //                }
-        //            }, ANIM_DURATION);
-        //        } else {
-        //            imageContainer.setClickable(false);
-        //            imageContainer.setVisibility(View.GONE);
-        //        }
     }
 
     @UiThread
-    public void runExitAnimation(final ImageView target, final View to, final int orientation) {
+    public void runExitAnimation(final ViewPager target, final View to, final int orientation) {
 
         final int duration = ANIMATION_DURATION;
 
@@ -1421,7 +1304,7 @@ public class MainActivity extends AppCompatActivity {
         ValueAnimator valueAnimator = ValueAnimator.ofInt(0, ANIMATION_INT);
         valueAnimator.setDuration(duration);
 
-        photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        //photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -1476,7 +1359,7 @@ public class MainActivity extends AppCompatActivity {
                                                 parent.getPaddingLeft();
 
                             } else if (!turn) {
-                                photoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                //photoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                 turn = true;
                                 turnProgress = animatedProgress;
                             }
@@ -1494,7 +1377,7 @@ public class MainActivity extends AppCompatActivity {
                                 layoutParams.height = thumbnailHeight;
                                 top = ((thumbnailTop - fullTop)) - parent.getPaddingTop();
                             } else if (!turn) {
-                                photoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                //photoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                 turn = true;
                                 turnProgress = animatedProgress;
                             }
@@ -1571,7 +1454,7 @@ public class MainActivity extends AppCompatActivity {
         final float ratioImage = (float) height / width;
         final float ratioView = (float) thumbnailHeight / thumbnailWidth;
 
-        photoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        //photoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
         target.setVisibility(View.VISIBLE);
 
@@ -1618,7 +1501,7 @@ public class MainActivity extends AppCompatActivity {
                                 layoutParams.width = thumbnailWidth;
                                 left = ((thumbnailLeft - fullLeft)) - parent.getPaddingLeft();
                             } else if (!turn) {
-                                photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                //photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                 turn = true;
                                 turnProgress = animatedProgress;
                             }
@@ -1641,7 +1524,7 @@ public class MainActivity extends AppCompatActivity {
                                 layoutParams.height = thumbnailHeight;
                                 top = ((thumbnailTop - fullTop)) - parent.getPaddingTop();
                             } else if (!turn) {
-                                photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                //photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                 turn = true;
                                 turnProgress = animatedProgress;
                             }
@@ -1669,7 +1552,7 @@ public class MainActivity extends AppCompatActivity {
                         layoutParams.setMargins(-parent.getPaddingLeft(), -parent.getPaddingTop(),
                                 0, 0);
                         target.setLayoutParams(layoutParams);
-                        photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        //photoViewAttacher.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     }
                 }
             }
@@ -1679,14 +1562,10 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                photoViewAttacher.setMinimumScale(1f);
+                //photoViewAttacher.setMinimumScale(1f);
                 turn = false;
             }
         }, duration + 100);
-    }
-
-    public PhotoViewAttacher getPhotoViewAttacher() {
-        return photoViewAttacher;
     }
 
     @UiThread
@@ -1712,13 +1591,13 @@ public class MainActivity extends AppCompatActivity {
         return downloadDir;
     }
 
-    @Background
+    //@Background
     public void download(Image image, DownloadCallback callback) {
         try {
             File downloadedFile = new File(downloadDir, image.getName().replace('/', '-'));
             OkHttpClient client = OkHttp.getInstance().client();
 
-            String apiUri = preferences.provider().get();
+            String apiUri = mSetting.provider();
             if (apiUri.equals(Providers.BEHOIMI_URI)) {
                 client.interceptors().add(new Interceptor() {
                     @Override
@@ -1750,35 +1629,179 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Background
     void downloadUpdate() {
+        Observable.<Void>just(null).observeOn(Schedulers.io()).subscribe(new Action1<Void>() {
+            @Override
+            public void call(Void aVoid) {
+                try {
+                    showProgressDialog();
+                    File downloadedFile = new File(updateDir, updateFileName);
+                    OkHttpClient client = new OkHttpClient();
+                    okhttp3.Request request = new okhttp3.Request.Builder().url(
+                            Utils.fixURL(updateUrl)).build();
+                    okhttp3.Response response = client.newCall(request).execute();
+                    BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
+                    sink.writeAll(response.body().source());
+                    sink.close();
 
-        try {
-            showProgressDialog();
-            File downloadedFile = new File(updateDir, updateFileName);
-            OkHttpClient client = new OkHttpClient();
-            okhttp3.Request request = new okhttp3.Request.Builder().url(
-                    Utils.fixURL(updateUrl)).build();
-            okhttp3.Response response = client.newCall(request).execute();
-            BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
-            sink.writeAll(response.body().source());
-            sink.close();
+                    hideProgressDialog();
 
-            hideProgressDialog();
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(downloadedFile),
+                            "application/vnd.android.package-archive");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
 
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(downloadedFile),
-                    "application/vnd.android.package-archive");
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void setReloadImageCallback(ReloadImageCallback callback) {
         reloadImageCallback = callback;
+    }
+
+    public void updateOrientation(int width, int height) {
+        if (width == height) {
+            return;
+        }
+
+        if (mPagerAdapter.getCount() == 1) {
+            return;
+        }
+
+        int orientation = getRequestedOrientation();
+        if (width <= height && orientation != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else if (width > height && orientation != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureId, Menu menu) {
+        if (currentImage != null) {
+            currentImageUri = mDataSource.getImageUri(currentImage.getFileUrl());
+        }
+        if (currentImageUri != null && viewPager.getVisibility() == View.VISIBLE) {
+            menuWallpaper.setVisible(true);
+            menuShare.setVisible(true);
+            menuDownload.setVisible(false);
+        } else {
+            menuWallpaper.setVisible(false);
+            menuShare.setVisible(false);
+        }
+
+        if (currentImageUri == null && viewPager.getVisibility() == View.VISIBLE &&
+                !mSetting.autoDownload()) {
+            menuDownload.setVisible(true);
+        }
+        return super.onMenuOpened(featureId, menu);
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        currentImage = mDataSource.get(position);
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
+
+    public void setPagingEnabled(boolean enabled) {
+        viewPager.setPagingEnabled(enabled);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (mTouchEventListener != null) {
+            mTouchEventListener.onDispatchTouchEvent(ev);
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    public void setTouchEventListener(TouchEventListener listener) {
+        mTouchEventListener = listener;
+    }
+
+    @Override
+    public void onListUpdate() {
+        mPagerAdapter = new PagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(mPagerAdapter);
+
+        hideProgressDialog();
+    }
+
+    @Override
+    public void onError(String message) {
+        hideProgressDialog();
+        showErrorDialog(message);
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+
+        final Image image = mDataSource.get(position);
+
+        if (image instanceof AnimePicturesList.AnimePicturesPreview) {
+            if (((AnimePicturesList.AnimePicturesPreview) image).getErotics() > 1) {
+                if (mSetting.animePicturesToken().isEmpty()) {
+                    // need login
+                    login();
+                    return;
+                }
+            }
+        }
+
+        if (floatSearch.isShow()) {
+            floatSearch.hide();
+        }
+
+        viewPager.setCurrentItem(position, false);
+        viewPager.setVisibility(View.VISIBLE);
+
+        setCurrentImage(image);
+        setMenu(false);
+        hideSystemUIDelayed(0);
+    }
+
+    private void askForPermission(String permission, int requestCode) {
+        if (ActivityCompat.checkSelfPermission(this, permission)
+                == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, permission)) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission },
+                    requestCode);
+        } else {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[] { permission },
+                    requestCode);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0 && ActivityCompat.checkSelfPermission(this, permissions[0])
+                != PackageManager.PERMISSION_GRANTED) {
+            switch (requestCode) {
+                case READ_STORAGE:
+                case WRITE_STORAGE:
+                    mSetting.setAutoDownload(false);
+                    break;
+            }
+        }
     }
 
     public interface ReloadImageCallback {
@@ -1789,5 +1812,9 @@ public class MainActivity extends AppCompatActivity {
         void onSucceed(Image image, File file);
 
         void onFailed(Image image, String message);
+    }
+
+    public interface TouchEventListener {
+        boolean onDispatchTouchEvent(MotionEvent motionEvent);
     }
 }

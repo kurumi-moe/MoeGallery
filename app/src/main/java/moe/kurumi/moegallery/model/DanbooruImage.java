@@ -3,7 +3,7 @@ package moe.kurumi.moegallery.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import moe.kurumi.moegallery.provider.Providers;
+import moe.kurumi.moegallery.data.Providers;
 import moe.kurumi.moegallery.utils.Utils;
 
 import java.util.List;

@@ -4,11 +4,11 @@ An android gallery to view anime images from online resources
 [![Build Status](https://travis-ci.org/kurumi-moe/MoeGallery.svg?branch=master)](https://travis-ci.org/kurumi-moe/MoeGallery)
 [![Download Status](https://img.shields.io/github/downloads/kurumi-moe/MoeGallery/v1.1.0/total.svg)](https://github.com/kurumi-moe/MoeGallery/releases/download/v1.1.0/MoeGallery-v1.1.0.apk)
 
-##WARNING
+## WARNING
 
 **You must be over 18 years old. Persons under 18 years of age using this application must be accompanied by an adult.**
 
-##Supported sites 
+## Supported sites
 
 [https://yande.re](https://yande.re)
 
@@ -22,14 +22,14 @@ An android gallery to view anime images from online resources
 
 [http://gelbooru.com](http://gelbooru.com)
 
-##Screenshots
+## Screenshots
 <img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-48-57.jpg" alt="screenshot" width="300">
 <img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-49-59.jpg" alt="screenshot" width="300">
 <img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-50-26.jpg" alt="screenshot" width="300">
 <img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-50-44.jpg" alt="screenshot" width="300">
 <img src="https://raw.githubusercontent.com/kurumi-moe/MoeGallery/master/screenshots/Screenshot_2015-06-28-14-51-13.jpg" alt="screenshot" width="300">
 
-##Features
+## Features
 
 1\. Good UI for browser
 
@@ -45,7 +45,7 @@ An android gallery to view anime images from online resources
 
 7\. And more coming...
 
-##How to make a contribution
+## How to make a contribution
 
 1\. Translate strings of missing language
 
@@ -57,13 +57,13 @@ An android gallery to view anime images from online resources
 
 5\. Share this application to your friends
 
-##Contributors
+## Contributors
 
 [kurumi](http://kurumi.moe)
 
 [Alez Boom](alejandroalebenm#gmail.com) Spanish translation.
 
-##Thanks to
+## Thanks to
 
 [androidannotations](https://github.com/excilys/androidannotations): An Open Source framework that speeds up Android development
 
@@ -89,7 +89,7 @@ An android gallery to view anime images from online resources
 
 [MaterialDesignLibrary](https://github.com/navasmdc/MaterialDesignLibrary): A library with components of Android L to you use in android 2.2 
 
-##[License](https://github.com/kurumi-moe/MoeGallery/blob/master/LICENSE.md)
+## [License](https://github.com/kurumi-moe/MoeGallery/blob/master/LICENSE.md)
 
 ```
                     GNU GENERAL PUBLIC LICENSE

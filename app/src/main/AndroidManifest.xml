@@ -8,10 +8,15 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:name="moe.kurumi.moegallery.application.GalleryApplication"
+        android:name="moe.kurumi.moegallery.application.Application"
         android:label="@string/app_name">
+
+        <meta-data
+            android:name="moe.kurumi.moegallery.glide.GlideSetup"
+            android:value="GlideModule"/>
+
         <activity
-            android:name=".activity.MainActivity_"
+            android:name=".activity.MainActivity"
             android:theme="@style/AppTheme"
             android:configChanges="orientation|screenSize">
             <intent-filter>
@@ -20,10 +25,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.SettingsActivity_"
+            android:name=".activity.SettingsActivity"
             android:label="@string/settings"/>
 
-        <activity android:name=".activity.LicensesActivity_"
+        <activity android:name=".activity.LicensesActivity"
                   android:label="@string/license"
                   android:theme="@style/Theme.AppCompat.DialogWhenLarge">
             <intent-filter>

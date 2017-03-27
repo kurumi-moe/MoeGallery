@@ -10,6 +10,9 @@ import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class OkHttp {
+
+    public final static String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
+
     private OkHttpClient.Builder mOkHttpBuilder;
 
     private OkHttp() {

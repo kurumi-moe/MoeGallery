@@ -21,6 +21,11 @@
         android:key="@string/float_favorite_key"
         android:summary="@string/float_favorite_summary"
         android:title="@string/float_favorite"/>
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="@string/auto_rotate_key"
+        android:summary="@string/auto_rotate_summary"
+        android:title="@string/auto_rotate"/>
     <PreferenceScreen
         android:title="@string/about">
         <Preference

@@ -1,5 +1,6 @@
 package moe.kurumi.moegallery.model;
 
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
@@ -49,15 +50,15 @@ public interface AnimePictures {
     @Multipart
     @POST("/pictures/autocomplete_tag")
     Call<AnimePicturesTagList> tag(
-            @Part("tag") String tags
+            @Part("tag") RequestBody tags
     );
 
     @Multipart
     @POST("/login/submit")
     Call<AnimePicturesUser> login(
-            @Part("login") String username,
-            @Part("password") String password,
-            @Part("time_zone") String timezone
+            @Part("login") RequestBody username,
+            @Part("password") RequestBody password,
+            @Part("time_zone") RequestBody timezone
     );
 
 }

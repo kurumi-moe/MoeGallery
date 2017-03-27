@@ -1,0 +1,10 @@
+<manifest
+    package="moe.kurumi.moegallery"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:name="moe.kurumi.moegallery.application.DebugApplication"
+        tools:replace="android:name"/>
+
+</manifest>

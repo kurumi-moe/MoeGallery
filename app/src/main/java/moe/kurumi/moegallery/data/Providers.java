@@ -1,4 +1,4 @@
-package moe.kurumi.moegallery.provider;
+package moe.kurumi.moegallery.data;
 
 /**
  * Created by kurumi on 15-5-30.

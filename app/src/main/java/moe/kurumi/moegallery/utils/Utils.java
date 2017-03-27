@@ -7,13 +7,18 @@ import android.graphics.Color;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-import moe.kurumi.moegallery.provider.Providers;
-
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import moe.kurumi.moegallery.data.Providers;
 
 /**
  * Created by kurumi on 15-5-29.
@@ -45,7 +50,9 @@ public class Utils {
     // read more from here: http://stackoverflow.com/a/3758880/2600042
     public static String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
-        if (bytes < unit) return bytes + " B";
+        if (bytes < unit) {
+            return bytes + " B";
+        }
         int exp = (int) (Math.log(bytes) / Math.log(unit));
         String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
@@ -63,7 +70,8 @@ public class Utils {
         } else if (uri.startsWith(Providers.SCHEME_HTTPS)) {
             domainName = uri.substring(Providers.SCHEME_HTTPS.length());
         }
-        domainName = domainName.substring(0, domainName.contains("/") ? domainName.indexOf('/') : domainName.length());
+        domainName = domainName.substring(0,
+                domainName.contains("/") ? domainName.indexOf('/') : domainName.length());
 
         return domainName;
     }
@@ -129,12 +137,46 @@ public class Utils {
         Resources resources = context.getResources();
 
         int id = resources.getIdentifier(
-                orientation == Configuration.ORIENTATION_PORTRAIT ? "navigation_bar_height" : "navigation_bar_height_landscape",
+                orientation == Configuration.ORIENTATION_PORTRAIT ? "navigation_bar_height"
+                        : "navigation_bar_height_landscape",
                 "dimen", "android");
         if (id > 0) {
             return resources.getDimensionPixelSize(id);
         }
         return 0;
+    }
+
+    public static void copy(File inputFile, File outputPath, String fileName) {
+
+        InputStream in;
+        OutputStream out;
+        try {
+
+            if (!outputPath.exists()) {
+                outputPath.mkdirs();
+            }
+
+            File outputFile = new File(outputPath, fileName);
+
+            if (outputFile.exists()) {
+                return;
+            }
+
+            in = new FileInputStream(inputFile);
+            out = new FileOutputStream(outputFile);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
