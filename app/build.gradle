@@ -63,6 +63,10 @@ android {
             signingConfig signingConfigs.release
         }
     }
+
+    lintOptions {
+       disable 'MissingTranslation'
+    }
 }
 
 configurations {
@@ -117,6 +121,7 @@ dependencies {
     compile 'com.google.dagger:dagger:2.6'
     apt 'com.google.dagger:dagger-compiler:2.6'
 
+    compile 'cat.ereza:customactivityoncrash:1.5.0'
 
     //compile 'com.github.navasmdc:MaterialDesign:1.4@aar'
 

@@ -2,6 +2,7 @@ package moe.kurumi.moegallery.application;
 
 import com.raizlabs.android.dbflow.config.FlowManager;
 
+import cat.ereza.customactivityoncrash.CustomActivityOnCrash;
 import moe.kurumi.moegallery.di.AppComponent;
 import moe.kurumi.moegallery.di.DaggerAppComponent;
 import moe.kurumi.moegallery.di.modules.AppModule;
@@ -27,6 +28,8 @@ public class Application extends android.app.Application {
 
         sAppComponent = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
         sAppComponent.inject(this);
+
+        CustomActivityOnCrash.install(this);
 
         FlowManager.init(this);
     }
