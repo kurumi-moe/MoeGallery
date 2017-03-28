@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -47,6 +48,10 @@ import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.Theme;
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.gc.materialdesign.views.ButtonFloat;
 import com.gc.materialdesign.views.ButtonRectangle;
 import com.nineoldandroids.animation.ObjectAnimator;
@@ -57,7 +62,6 @@ import com.raizlabs.android.dbflow.sql.language.Select;
 import org.apmem.tools.layouts.FlowLayout;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -75,35 +79,25 @@ import moe.kurumi.moegallery.di.modules.MainModule;
 import moe.kurumi.moegallery.model.AnimePictures;
 import moe.kurumi.moegallery.model.AnimePicturesList;
 import moe.kurumi.moegallery.model.AnimePicturesUser;
-import moe.kurumi.moegallery.model.Config;
-import moe.kurumi.moegallery.model.Github;
 import moe.kurumi.moegallery.model.GithubRelease;
 import moe.kurumi.moegallery.model.Image;
 import moe.kurumi.moegallery.model.Tag;
-import moe.kurumi.moegallery.model.Version;
 import moe.kurumi.moegallery.model.database.FavoriteImage;
 import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
 import moe.kurumi.moegallery.model.database.HistoryTag;
 import moe.kurumi.moegallery.model.database.HistoryTag$Table;
 import moe.kurumi.moegallery.model.setting.Setting;
-import moe.kurumi.moegallery.utils.OkHttp;
 import moe.kurumi.moegallery.utils.Utils;
 import moe.kurumi.moegallery.view.ViewPager;
 import moe.kurumi.moegallery.view.adapter.GalleryAdapter;
 import moe.kurumi.moegallery.view.adapter.PagerAdapter;
 import okhttp3.Headers;
-import okhttp3.Interceptor;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
-import okio.BufferedSink;
-import okio.Okio;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import rx.Observable;
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity
         implements android.support.v4.view.ViewPager.OnPageChangeListener,
@@ -153,6 +147,8 @@ public class MainActivity extends AppCompatActivity
     int favoriteRightMargin;
     @Inject
     Retrofit.Builder mBuilder;
+    @Inject
+    RequestManager mRequestManager;
     private ArrayAdapter providerAdapter;
     private ArrayAdapter historyTagsAdapter;
     private String providerUri;
@@ -218,10 +214,6 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         updateDir = new File(Environment.getExternalStorageDirectory().getPath(), "Downloads");
-
-        if (!updateDir.exists()) {
-            updateDir.mkdir();
-        }
 
         progressDialog = new MaterialDialog.Builder(this)
                 .cancelable(false)
@@ -613,46 +605,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     void checkUpdate() {
+        try {
+            PackageManager packageManager = getPackageManager();
+            String versionString = packageManager.getPackageInfo(getPackageName(), 0).versionName;
 
-        Observable.<Void>just(null).observeOn(Schedulers.io()).subscribe(new Action1<Void>() {
-            @Override
-            public void call(Void aVoid) {
-                long lastUpdate = mSetting.lastUpdate();
-
-                if (System.currentTimeMillis() - lastUpdate > Config.UPDATE_DURATION) {
-                    try {
-                        Retrofit restAdapter = mBuilder.baseUrl(Providers.GITHUB_API_URI).build();
-                        Github github = restAdapter.create(Github.class);
-                        GithubRelease latest = github.latest().execute().body();
-
-                        PackageManager packageManager = getPackageManager();
-                        String versionString =
-                                packageManager.getPackageInfo(getPackageName(), 0).versionName;
-
-                        Version currentVersion = new Version(versionString);
-                        Version latestVersion = new Version(latest.getTagName().substring(1));
-
-                        if (latestVersion.compareTo(currentVersion) > 0 &&
-                                !latest.getPrerelease() &&
-                                latest.getAuthor().getLogin().equals(Config.GITHUB_UPDATE_AUTHOR)) {
-
-                            for (GithubRelease.Asset asset : latest.getAssets()) {
-
-                                if (asset.getContentType().equals(Config.GITHUB_UPDATE_CONTENT_TYPE)
-                                        &&
-                                        asset.getState().equals(Config.GITHUB_UPDATE_STATUS)) {
-                                    showUpdateDialog(asset.getName(), asset.getSize(),
-                                            asset.getBrowserDownloadUrl());
-                                    mSetting.setLastUpdate(System.currentTimeMillis());
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            mDataSource.checkUpdate(versionString).subscribe(new Action1<GithubRelease.Asset>() {
+                @Override
+                public void call(GithubRelease.Asset asset) {
+                    showUpdateDialog(asset.getName(), asset.getSize(),
+                            asset.getBrowserDownloadUrl());
                 }
-            }
-        });
+            }, new Action1<Throwable>() {
+                @Override
+                public void call(Throwable throwable) {
+                    onError(throwable.getMessage());
+                }
+            });
+
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -817,23 +790,28 @@ public class MainActivity extends AppCompatActivity
     }
 
     void downloadImage() {
-        showProgressDialog();
+        if (!hasStoragePermission()) {
+            return;
+        }
         Image image = currentImage;
-        download(image, new DownloadCallback() {
-            @Override
-            public void onSucceed(Image image, File file) {
-                hideProgressDialog();
-                if (reloadImageCallback != null) {
-                    reloadImageCallback.onReloadImage(image);
-                }
-            }
 
-            @Override
-            public void onFailed(Image image, String message) {
-                hideProgressDialog();
-                showErrorDialog(message);
-            }
-        });
+        if (mDataSource.getCachedDetail(image.getFileUrl()) != null) {
+            image = mDataSource.getCachedDetail(image.getFileUrl());
+        }
+
+        download(image);
+    }
+
+    private boolean hasStoragePermission() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+            askForPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_STORAGE);
+            askForPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_STORAGE);
+            return false;
+        }
+        return true;
     }
 
     void switchFavorite() {
@@ -1254,17 +1232,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @UiThread
     public void showProgressDialog() {
         if (!progressDialog.isShowing()) {
             progressDialog.getWindow().getAttributes().windowAnimations = android.R.anim.fade_in;
             progressDialog.show();
         }
-    }
-
-    @UiThread
-    public void showImage(final int thumbnailLeft, final int thumbnailTop,
-            final int thumbnailWidth, final int thumbnailHeight) {
     }
 
     @UiThread
@@ -1591,72 +1563,62 @@ public class MainActivity extends AppCompatActivity
         return downloadDir;
     }
 
-    //@Background
-    public void download(Image image, DownloadCallback callback) {
-        try {
-            File downloadedFile = new File(downloadDir, image.getName().replace('/', '-'));
-            OkHttpClient client = OkHttp.getInstance().client();
-
-            String apiUri = mSetting.provider();
-            if (apiUri.equals(Providers.BEHOIMI_URI)) {
-                client.interceptors().add(new Interceptor() {
+    public void download(final Image image) {
+        mRequestManager.load(new GlideUrl(image.getFileUrl()))
+                .downloadOnly(new SimpleTarget<File>() {
                     @Override
-                    public okhttp3.Response intercept(Chain chain) throws IOException {
-                        okhttp3.Request newRequest = chain.request().newBuilder()
-                                .addHeader("Referer", Providers.BEHOIMI_URI + "/")
-                                .build();
-                        return chain.proceed(newRequest);
+                    public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                        super.onLoadFailed(e, errorDrawable);
+                        showErrorDialog(e.getMessage());
+                    }
+
+                    @Override
+                    public void onResourceReady(File resource,
+                            GlideAnimation<? super File> glideAnimation) {
+                        File dir = new File(
+                                Environment.getExternalStorageDirectory().getPath(), "MoeGallery");
+                        String fileName = image.getName().replace('/', '-');
+                        Utils.copy(resource, dir, fileName);
+                        mDataSource.cacheImageUri(currentImage.getFileUrl(),
+                                Uri.fromFile(new File(dir, fileName)));
+
+                        makeToast(R.string.download_complete);
+
+                        if (reloadImageCallback != null) {
+                            reloadImageCallback.onReloadImage(image);
+                        }
                     }
                 });
-            }
-
-            okhttp3.Request request = new okhttp3.Request.Builder().url(
-                    Utils.fixURL(image.getFileUrl())).build();
-            okhttp3.Response response = client.newCall(request).execute();
-            BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
-            sink.writeAll(response.body().source());
-            sink.close();
-
-            if (callback != null) {
-                callback.onSucceed(image, downloadedFile);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            if (callback != null) {
-                callback.onFailed(image, e.getMessage());
-            }
-        }
     }
 
     void downloadUpdate() {
-        Observable.<Void>just(null).observeOn(Schedulers.io()).subscribe(new Action1<Void>() {
-            @Override
-            public void call(Void aVoid) {
-                try {
-                    showProgressDialog();
-                    File downloadedFile = new File(updateDir, updateFileName);
-                    OkHttpClient client = new OkHttpClient();
-                    okhttp3.Request request = new okhttp3.Request.Builder().url(
-                            Utils.fixURL(updateUrl)).build();
-                    okhttp3.Response response = client.newCall(request).execute();
-                    BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
-                    sink.writeAll(response.body().source());
-                    sink.close();
 
-                    hideProgressDialog();
+        if (!hasStoragePermission()) {
+            return;
+        }
 
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setDataAndType(Uri.fromFile(downloadedFile),
-                            "application/vnd.android.package-archive");
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent);
+        if (!updateDir.exists()) {
+            updateDir.mkdir();
+        }
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        showProgressDialog();
+
+        mDataSource.downloadUpdate(updateDir, updateFileName, updateUrl).subscribe(
+                new Action1<Uri>() {
+                    @Override
+                    public void call(Uri uri) {
+                        hideProgressDialog();
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setDataAndType(uri, "application/vnd.android.package-archive");
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        onError(throwable.getMessage());
+                    }
+                });
     }
 
     public void setReloadImageCallback(ReloadImageCallback callback) {
@@ -1688,8 +1650,19 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onMenuOpened(int featureId, Menu menu) {
         if (currentImage != null) {
+
+            Image image = mDataSource.getCachedDetail(currentImage.getFileUrl());
+            if (image != null) {
+                String fileName = image.getName().replace('/', '-');
+                File file = new File(Utils.getDir(), fileName);
+                if (file.exists()) {
+                    mDataSource.cacheImageUri(currentImage.getFileUrl(), Uri.fromFile(file));
+                }
+            }
+
             currentImageUri = mDataSource.getImageUri(currentImage.getFileUrl());
         }
+
         if (currentImageUri != null && viewPager.getVisibility() == View.VISIBLE) {
             menuWallpaper.setVisible(true);
             menuShare.setVisible(true);
@@ -1709,6 +1682,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onPageSelected(int position) {
         currentImage = mDataSource.get(position);
+        if (currentImage != null) {
+            String title = currentImage.getName();
+            Image image = mDataSource.getCachedDetail(currentImage.getFileUrl());
+            if (image != null) {
+                title = image.getName();
+            }
+            setTitle(title);
+        }
     }
 
     @Override
@@ -1806,12 +1787,6 @@ public class MainActivity extends AppCompatActivity
 
     public interface ReloadImageCallback {
         void onReloadImage(Image image);
-    }
-
-    public interface DownloadCallback {
-        void onSucceed(Image image, File file);
-
-        void onFailed(Image image, String message);
     }
 
     public interface TouchEventListener {

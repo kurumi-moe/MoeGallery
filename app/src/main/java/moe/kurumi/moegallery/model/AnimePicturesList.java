@@ -3,10 +3,10 @@ package moe.kurumi.moegallery.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import moe.kurumi.moegallery.utils.Utils;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import moe.kurumi.moegallery.utils.Utils;
 
 /**
  * Created by kurumi on 15-5-31.
@@ -240,7 +240,7 @@ public class AnimePicturesList {
          *     The bigPreview
          */
         public String getBigPreview() {
-            return bigPreview;
+            return bigPreview.replace("http://", "https://");
         }
 
         /**

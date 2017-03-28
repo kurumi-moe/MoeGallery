@@ -26,6 +26,14 @@
         android:key="@string/auto_rotate_key"
         android:summary="@string/auto_rotate_summary"
         android:title="@string/auto_rotate"/>
+    <Preference
+        android:key="project"
+        android:summary="@string/project_url"
+        android:title="@string/project_title">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="@string/project_url"/>
+    </Preference>
     <PreferenceScreen
         android:title="@string/about">
         <Preference
@@ -37,6 +45,14 @@
             android:summary=""
             android:title="@string/license">
             <intent android:action="moe.kurumi.moegallery.action.VIEW_LICENSES"/>
+        </Preference>
+        <Preference
+            android:key="feedback"
+            android:summary="@string/feedback_url"
+            android:title="@string/feedback_title">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/feedback_url"/>
         </Preference>
         <Preference
             android:key="@string/version_key"

@@ -26,7 +26,9 @@ public class OkHttp {
                 HttpUrl url = request.url()
                         .newBuilder()
                         .build();
-                request = request.newBuilder().url(url).build();
+                request = request.newBuilder()
+                        .header("User-Agent", OkHttp.USER_AGENT)
+                        .url(url).build();
                 return chain.proceed(request);
             }
         };

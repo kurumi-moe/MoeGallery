@@ -1,14 +1,14 @@
-<manifest package="moe.kurumi.moegallery"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="moe.kurumi.moegallery">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.SET_WALLPAPER"/>
 
     <application
+        android:name="moe.kurumi.moegallery.application.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:name="moe.kurumi.moegallery.application.Application"
         android:label="@string/app_name">
 
         <meta-data
@@ -17,8 +17,8 @@
 
         <activity
             android:name=".activity.MainActivity"
-            android:theme="@style/AppTheme"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -28,9 +28,9 @@
             android:name=".activity.SettingsActivity"
             android:label="@string/settings"/>
 
-        <activity android:name=".activity.LicensesActivity"
-                  android:label="@string/license"
-                  android:theme="@style/Theme.AppCompat.DialogWhenLarge">
+        <activity
+            android:name=".activity.LicensesActivity"
+            android:label="@string/license">
             <intent-filter>
                 <action android:name="moe.kurumi.moegallery.action.VIEW_LICENSES"/>
                 <category android:name="android.intent.category.DEFAULT"/>

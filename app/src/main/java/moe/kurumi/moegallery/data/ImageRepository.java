@@ -7,6 +7,7 @@ import android.support.annotation.UiThread;
 import com.raizlabs.android.dbflow.sql.builder.Condition;
 import com.raizlabs.android.dbflow.sql.language.Select;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,25 +15,34 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import moe.kurumi.moegallery.application.Application;
 import moe.kurumi.moegallery.model.AnimePictures;
 import moe.kurumi.moegallery.model.AnimePicturesList;
 import moe.kurumi.moegallery.model.Behoimi;
+import moe.kurumi.moegallery.model.Config;
 import moe.kurumi.moegallery.model.Danbooru;
 import moe.kurumi.moegallery.model.DanbooruTag;
 import moe.kurumi.moegallery.model.Gelbooru;
 import moe.kurumi.moegallery.model.GelbooruList;
+import moe.kurumi.moegallery.model.Github;
+import moe.kurumi.moegallery.model.GithubRelease;
 import moe.kurumi.moegallery.model.Image;
 import moe.kurumi.moegallery.model.Moebooru;
 import moe.kurumi.moegallery.model.Tag;
+import moe.kurumi.moegallery.model.Version;
 import moe.kurumi.moegallery.model.database.FavoriteImage;
 import moe.kurumi.moegallery.model.database.FavoriteImage$Table;
 import moe.kurumi.moegallery.model.database.HistoryImage;
 import moe.kurumi.moegallery.model.database.HistoryImage$Table;
 import moe.kurumi.moegallery.model.setting.Setting;
+import moe.kurumi.moegallery.utils.Utils;
 import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
+import okio.BufferedSink;
+import okio.Okio;
 import retrofit2.Retrofit;
 import rx.Observable;
 import rx.Subscriber;
@@ -50,6 +60,9 @@ public class ImageRepository implements ImageDataSource {
     Context context;
     @Inject
     Retrofit.Builder mBuilder;
+    @Inject
+    @Named("xml")
+    Retrofit.Builder mXmlBuilder;
     private List<Image> mImageList = new ArrayList<>();
     private Map<String, Image> mDetailImageMap = new HashMap<>();
     private Map<String, Uri> mImageUri = new HashMap<>();
@@ -115,7 +128,7 @@ public class ImageRepository implements ImageDataSource {
                             break;
                         case Providers.GELBOORU_URI:
 
-                            restAdapter = mBuilder
+                            restAdapter = mXmlBuilder
                                     .baseUrl(apiUri)
                                     .build();
                             Gelbooru gelbooru = restAdapter.create(Gelbooru.class);
@@ -322,6 +335,66 @@ public class ImageRepository implements ImageDataSource {
                     }
                     subscriber.onNext(mImageList);
                     notifyDataSetChanged();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    subscriber.onError(e);
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public Observable<GithubRelease.Asset> checkUpdate(final String versionString) {
+        return Observable.create(new Observable.OnSubscribe<GithubRelease.Asset>() {
+            @Override
+            public void call(Subscriber<? super GithubRelease.Asset> subscriber) {
+                long lastUpdate = mSetting.lastUpdate();
+                if (System.currentTimeMillis() - lastUpdate > Config.UPDATE_DURATION) {
+                    try {
+                        Retrofit restAdapter = mBuilder.baseUrl(Providers.GITHUB_API_URI).build();
+                        Github github = restAdapter.create(Github.class);
+                        GithubRelease latest = github.latest().execute().body();
+
+                        Version currentVersion = new Version(versionString);
+                        Version latestVersion = new Version(latest.getTagName().substring(1));
+
+                        if (latestVersion.compareTo(currentVersion) > 0 &&
+                                !latest.getPrerelease() &&
+                                latest.getAuthor().getLogin().equals(Config.GITHUB_UPDATE_AUTHOR)) {
+
+                            for (GithubRelease.Asset asset : latest.getAssets()) {
+
+                                if (asset.getContentType().equals(Config.GITHUB_UPDATE_CONTENT_TYPE)
+                                        && asset.getState().equals(Config.GITHUB_UPDATE_STATUS)) {
+                                    subscriber.onNext(asset);
+                                }
+                            }
+                        }
+                        mSetting.setLastUpdate(System.currentTimeMillis());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        subscriber.onError(e);
+                    }
+                }
+            }
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public Observable<Uri> downloadUpdate(final File dir, final String name, final String url) {
+        return Observable.create(new Observable.OnSubscribe<Uri>() {
+            @Override
+            public void call(Subscriber<? super Uri> subscriber) {
+                try {
+                    File downloadedFile = new File(dir, name);
+                    OkHttpClient client = new OkHttpClient();
+                    okhttp3.Request request = new okhttp3.Request.Builder().url(
+                            Utils.fixURL(url)).build();
+                    okhttp3.Response response = client.newCall(request).execute();
+                    BufferedSink sink = Okio.buffer(Okio.sink(downloadedFile));
+                    sink.writeAll(response.body().source());
+                    sink.close();
+                    subscriber.onNext(Uri.fromFile(downloadedFile));
                 } catch (Exception e) {
                     e.printStackTrace();
                     subscriber.onError(e);

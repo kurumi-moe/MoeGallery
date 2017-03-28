@@ -18,7 +18,6 @@ import android.widget.ProgressBar;
 
 import com.almeros.android.multitouch.RotateGestureDetector;
 import com.bumptech.glide.GenericRequestBuilder;
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.model.GlideUrl;
@@ -294,8 +293,6 @@ public class ImageFragment extends Fragment implements MainActivity.TouchEventLi
         mPhotoView = (PhotoView) view.findViewById(R.id.image);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progress);
 
-        mName = mImage.getName();
-
         ViewCompat.setTransitionName(mPhotoView, mName);
 
         updateTransition();
@@ -303,6 +300,10 @@ public class ImageFragment extends Fragment implements MainActivity.TouchEventLi
         String apiUri = mSetting.provider();
         Image image = mImage;
         final LazyHeaders.Builder header = header();
+
+        mRequestManager.load(new GlideUrl(mImage.getPreviewUrl(), header.build()))
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .into(mPhotoView);
 
         switch (apiUri) {
             case Providers.BEHOIMI_URI:
@@ -357,6 +358,7 @@ public class ImageFragment extends Fragment implements MainActivity.TouchEventLi
             public void onViewTap(View view, float x, float y) {
                 MainActivity out = (MainActivity) getActivity();
                 if (!out.isSystemUIVisible()) {
+                    out.setTitle(mName);
                     out.showSystemUI();
                     out.hideSystemUIDelayed(3000);
                     out.showFavorite();
@@ -371,9 +373,12 @@ public class ImageFragment extends Fragment implements MainActivity.TouchEventLi
     }
 
     private void cacheImage(final Image image, final LazyHeaders.Builder header) {
+        mName = image.getName();
+        mUri = image.getFileUrl();
+
         saveImage(image);
 
-        Glide.with(this).load(new GlideUrl(image.getFileUrl()))
+        mRequestManager.load(new GlideUrl(image.getFileUrl(), header.build()))
                 .downloadOnly(new SimpleTarget<File>() {
                     @Override
                     public void onResourceReady(File resource,

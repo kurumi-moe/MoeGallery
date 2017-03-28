@@ -2,9 +2,10 @@ package moe.kurumi.moegallery.model;
 
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Root;
-import moe.kurumi.moegallery.utils.Utils;
 
 import java.util.List;
+
+import moe.kurumi.moegallery.utils.Utils;
 
 /**
  * Created by kurumi on 15-5-31.
@@ -60,26 +61,21 @@ public class GelbooruImage implements Image {
     @Attribute(name = "preview_height")
     protected Short previewHeight;
 
-
     /**
      * Gets the value of the height property.
      *
-     * @return
-     *     possible object is
-     *     {@link Short }
-     *
+     * @return possible object is
+     * {@link Short }
      */
     public Long getHeight() {
-        return (long)height;
+        return (long) height;
     }
 
     /**
      * Sets the value of the height property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Short }
-     *
+     * @param value allowed object is
+     * {@link Short }
      */
     public void setHeight(Short value) {
         this.height = value;
@@ -88,10 +84,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the score property.
      *
-     * @return
-     *     possible object is
-     *     {@link Byte }
-     *
+     * @return possible object is
+     * {@link Byte }
      */
     public Byte getScore() {
         return score;
@@ -100,10 +94,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the score property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Byte }
-     *
+     * @param value allowed object is
+     * {@link Byte }
      */
     public void setScore(Byte value) {
         this.score = value;
@@ -112,22 +104,21 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the fileUrl property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getFileUrl() {
-        return fileUrl;
+        if (fileUrl.startsWith("http")) {
+            return fileUrl;
+        }
+        return "https:" + fileUrl;
     }
 
     /**
      * Sets the value of the fileUrl property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setFileUrl(String value) {
         this.fileUrl = value;
@@ -136,10 +127,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the parentId property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getParentId() {
         return parentId;
@@ -148,10 +137,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the parentId property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setParentId(String value) {
         this.parentId = value;
@@ -160,46 +147,43 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the sampleUrl property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getSampleUrl() {
-        return sampleUrl;
+        if (sampleUrl.startsWith("http")) {
+            return sampleUrl;
+        }
+        return "https:" + sampleUrl;
+    }
+
+    /**
+     * Sets the value of the sampleUrl property.
+     *
+     * @param value allowed object is
+     * {@link String }
+     */
+    public void setSampleUrl(String value) {
+        this.sampleUrl = value;
     }
 
     @Override
     public String getName() {
 
         String tags = getTags();
-        if (tags.length()>50) {
+        if (tags.length() > 50) {
             tags = tags.substring(0, 50);
         }
         String ext = getFileUrl().substring(getFileUrl().lastIndexOf('.'));
 
-        return Utils.getProviderName(getPreviewUrl())+" - "+getId()+" "+tags+ext;
-    }
-
-    /**
-     * Sets the value of the sampleUrl property.
-     *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
-     */
-    public void setSampleUrl(String value) {
-        this.sampleUrl = value;
+        return Utils.getProviderName(getPreviewUrl()) + " - " + getId() + " " + tags + ext;
     }
 
     /**
      * Gets the value of the sampleWidth property.
      *
-     * @return
-     *     possible object is
-     *     {@link Short }
-     *
+     * @return possible object is
+     * {@link Short }
      */
     public Short getSampleWidth() {
         return sampleWidth;
@@ -208,10 +192,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the sampleWidth property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Short }
-     *
+     * @param value allowed object is
+     * {@link Short }
      */
     public void setSampleWidth(Short value) {
         this.sampleWidth = value;
@@ -220,10 +202,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the sampleHeight property.
      *
-     * @return
-     *     possible object is
-     *     {@link Short }
-     *
+     * @return possible object is
+     * {@link Short }
      */
     public Short getSampleHeight() {
         return sampleHeight;
@@ -232,10 +212,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the sampleHeight property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Short }
-     *
+     * @param value allowed object is
+     * {@link Short }
      */
     public void setSampleHeight(Short value) {
         this.sampleHeight = value;
@@ -244,22 +222,21 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the previewUrl property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getPreviewUrl() {
-        return previewUrl;
+        if (previewUrl.startsWith("http")) {
+            return previewUrl;
+        }
+        return "https:" + previewUrl;
     }
 
     /**
      * Sets the value of the previewUrl property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setPreviewUrl(String value) {
         this.previewUrl = value;
@@ -268,10 +245,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the rating property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRating() {
         return rating;
@@ -280,10 +255,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the rating property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setRating(String value) {
         this.rating = value;
@@ -292,10 +265,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the tags property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTags() {
         return tags;
@@ -304,10 +275,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the tags property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setTags(String value) {
         this.tags = value;
@@ -316,13 +285,21 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the id property.
      *
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *
+     * @return possible object is
+     * {@link Integer }
      */
     public Long getId() {
-        return (long)id;
+        return (long) id;
+    }
+
+    /**
+     * Sets the value of the id property.
+     *
+     * @param value allowed object is
+     * {@link Integer }
+     */
+    public void setId(Integer value) {
+        this.id = value;
     }
 
     @Override
@@ -337,12 +314,12 @@ public class GelbooruImage implements Image {
 
     @Override
     public Long getCount() {
-        return (long)0;
+        return (long) 0;
     }
 
     @Override
     public Long getSize() {
-        return (long)0;
+        return (long) 0;
     }
 
     @Override
@@ -351,36 +328,20 @@ public class GelbooruImage implements Image {
     }
 
     /**
-     * Sets the value of the id property.
-     *
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *
-     */
-    public void setId(Integer value) {
-        this.id = value;
-    }
-
-    /**
      * Gets the value of the width property.
      *
-     * @return
-     *     possible object is
-     *     {@link Short }
-     *
+     * @return possible object is
+     * {@link Short }
      */
     public Long getWidth() {
-        return (long)width;
+        return (long) width;
     }
 
     /**
      * Sets the value of the width property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Short }
-     *
+     * @param value allowed object is
+     * {@link Short }
      */
     public void setWidth(Short value) {
         this.width = value;
@@ -389,10 +350,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the change property.
      *
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *
+     * @return possible object is
+     * {@link Integer }
      */
     public Integer getChange() {
         return change;
@@ -401,10 +360,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the change property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *
+     * @param value allowed object is
+     * {@link Integer }
      */
     public void setChange(Integer value) {
         this.change = value;
@@ -413,10 +370,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the md5 property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getMd5() {
         return md5;
@@ -425,10 +380,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the md5 property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setMd5(String value) {
         this.md5 = value;
@@ -437,10 +390,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the creatorId property.
      *
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *
+     * @return possible object is
+     * {@link Integer }
      */
     public Integer getCreatorId() {
         return creatorId;
@@ -449,10 +400,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the creatorId property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *
+     * @param value allowed object is
+     * {@link Integer }
      */
     public void setCreatorId(Integer value) {
         this.creatorId = value;
@@ -461,10 +410,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the hasChildren property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getHasChildren() {
         return hasChildren;
@@ -473,10 +420,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the hasChildren property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setHasChildren(String value) {
         this.hasChildren = value;
@@ -485,10 +430,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the createdAt property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getCreatedAt() {
         return createdAt;
@@ -497,10 +440,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the createdAt property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setCreatedAt(String value) {
         this.createdAt = value;
@@ -509,10 +450,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the status property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getStatus() {
         return status;
@@ -521,10 +460,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the status property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setStatus(String value) {
         this.status = value;
@@ -533,10 +470,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the source property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getSource() {
         return source;
@@ -545,10 +480,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the source property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setSource(String value) {
         this.source = value;
@@ -557,10 +490,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the hasNotes property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getHasNotes() {
         return hasNotes;
@@ -569,10 +500,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the hasNotes property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setHasNotes(String value) {
         this.hasNotes = value;
@@ -581,10 +510,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the hasComments property.
      *
-     * @return
-     *     possible object is
-     *     {@link String }
-     *
+     * @return possible object is
+     * {@link String }
      */
     public String getHasComments() {
         return hasComments;
@@ -593,10 +520,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the hasComments property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *
+     * @param value allowed object is
+     * {@link String }
      */
     public void setHasComments(String value) {
         this.hasComments = value;
@@ -605,10 +530,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the previewWidth property.
      *
-     * @return
-     *     possible object is
-     *     {@link Short }
-     *
+     * @return possible object is
+     * {@link Short }
      */
     public Short getPreviewWidth() {
         return previewWidth;
@@ -617,10 +540,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the previewWidth property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Short }
-     *
+     * @param value allowed object is
+     * {@link Short }
      */
     public void setPreviewWidth(Short value) {
         this.previewWidth = value;
@@ -629,10 +550,8 @@ public class GelbooruImage implements Image {
     /**
      * Gets the value of the previewHeight property.
      *
-     * @return
-     *     possible object is
-     *     {@link Short }
-     *
+     * @return possible object is
+     * {@link Short }
      */
     public Short getPreviewHeight() {
         return previewHeight;
@@ -641,10 +560,8 @@ public class GelbooruImage implements Image {
     /**
      * Sets the value of the previewHeight property.
      *
-     * @param value
-     *     allowed object is
-     *     {@link Short }
-     *
+     * @param value allowed object is
+     * {@link Short }
      */
     public void setPreviewHeight(Short value) {
         this.previewHeight = value;

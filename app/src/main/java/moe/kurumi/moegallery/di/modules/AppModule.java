@@ -6,6 +6,7 @@ import android.content.Context;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -54,7 +55,15 @@ public class AppModule {
     Retrofit.Builder provideRetrofit(OkHttpClient client, Gson gson) {
         return new Retrofit.Builder()
                 .client(client)
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create(gson));
+    }
+
+    @Singleton
+    @Provides
+    @Named("xml")
+    Retrofit.Builder provideXmlRetrofit(OkHttpClient client, Gson gson) {
+        return new Retrofit.Builder()
+                .client(client)
                 .addConverterFactory(SimpleXmlConverterFactory.create());
     }
 

@@ -17,9 +17,13 @@ public class LicensesActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_licenses);
 
-        webView = (WebView) findViewById(R.id.webView);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
-        setView();
+        webView = (WebView) findViewById(R.id.webView);
+        webView.loadUrl("file:///android_res/raw/licenses.html");
     }
 
     @Override
@@ -31,18 +35,5 @@ public class LicensesActivity extends Activity {
                 break;
         }
         return true;
-    }
-
-    void setView() {
-        ActionBar actionBar = getActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        webView.loadUrl("file:///android_res/raw/licenses.html");
     }
 }

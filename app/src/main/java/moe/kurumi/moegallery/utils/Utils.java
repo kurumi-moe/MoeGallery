@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.os.Environment;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
@@ -177,6 +178,10 @@ public class Utils {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static File getDir() {
+        return new File(Environment.getExternalStorageDirectory().getPath(), "MoeGallery");
     }
 
 }

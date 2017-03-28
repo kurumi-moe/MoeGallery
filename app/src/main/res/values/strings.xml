@@ -77,4 +77,9 @@
     <string name="auto_rotate_key" translatable="false">auto_rotate_key</string>
     <string name="auto_rotate_summary">Auto rotate screen by image size</string>
     <string name="auto_rotate">Auto rotate</string>
+    <string name="download_complete">Download complete</string>
+    <string name="project_url" translatable="false">https://github.com/kurumi-moe/MoeGallery</string>
+    <string name="project_title">Open source project</string>
+    <string name="feedback_url" translatable="false">https://github.com/kurumi-moe/MoeGallery/issues</string>
+    <string name="feedback_title">Feedback</string>
 </resources>

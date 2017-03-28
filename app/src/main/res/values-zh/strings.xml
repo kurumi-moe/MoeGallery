@@ -50,4 +50,7 @@
     <string name="new_version_available">发现新版本，是否现在更新？</string>
     <string name="auto_rotate">自动旋转</string>
     <string name="auto_rotate_summary">根据图片大小自动旋转屏幕</string>
+    <string name="download_complete">已保存</string>
+    <string name="project_title">开放源代码项目</string>
+    <string name="feedback_title">反馈</string>
 </resources>
