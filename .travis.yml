@@ -33,7 +33,7 @@ deploy:
   api-key: $GITHUB_TOKEN
   file:
     - "$HOME/MoeGallery-$GIT_TAG-debug.apk"
-    #- "$HOME/MoeGallery-$GIT_TAG-release.apk"
+    - "$HOME/MoeGallery-$GIT_TAG-release.apk"
   skip_cleanup: true
   on:
     tags: true
