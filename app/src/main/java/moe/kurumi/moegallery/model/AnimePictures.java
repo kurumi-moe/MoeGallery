@@ -15,7 +15,7 @@ import retrofit2.http.Query;
  */
 public interface AnimePictures {
 
-    @GET("/pictures/view_posts/{page}")
+    @GET("/pictures/view_posts/{page}?posts_per_page=80")
     Call<AnimePicturesList> list(
             @Path("page") int page,
             @Query("type") String type,
@@ -37,7 +37,7 @@ public interface AnimePictures {
             @Query("lang") String lang
     );
 
-    @GET("/pictures/view_posts/{page}")
+    @GET("/pictures/view_posts/{page}?posts_per_page=80")
     Call<AnimePicturesList> search(
             @Path("page") int page,
             @Query("search_tag") String tags,
