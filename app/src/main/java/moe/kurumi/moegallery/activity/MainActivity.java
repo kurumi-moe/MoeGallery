@@ -1812,7 +1812,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showLoginSnakeBar() {
 
-        if (mDataSource.getCount() == 0) {
+        if (mDataSource.size() == 0) {
             return;
         }
 

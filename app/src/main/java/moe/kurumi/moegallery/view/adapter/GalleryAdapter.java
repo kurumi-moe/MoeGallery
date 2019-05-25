@@ -57,6 +57,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             @Override
             public void call(Throwable throwable) {
                 mListener.onError(throwable.getMessage());
+                mListener.onListUpdate();
+                notifyDataSetChanged();
             }
         });
     }
