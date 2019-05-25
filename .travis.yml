@@ -4,8 +4,8 @@ android:
    components:
    - tools
    - platform-tools
-   - android-25
-   - build-tools-25.0.0
+   - android-28
+   - build-tools-28.0.0
    - extra
 
 jdk: oraclejdk8
@@ -20,9 +20,9 @@ before_install:
 
 script:
   - ./gradlew clean assembleDebug
-  - cp app/build/outputs/apk/MoeGallery-$GIT_TAG-debug.apk $HOME
+  - cp app/build/outputs/apk/debug/MoeGallery-$GIT_TAG-debug.apk $HOME
   - ./gradlew clean assembleRelease
-  - cp app/build/outputs/apk/MoeGallery-$GIT_TAG-release.apk $HOME
+  - cp app/build/outputs/apk/release/MoeGallery-$GIT_TAG-release.apk $HOME
   - md5sum "$HOME/MoeGallery-$GIT_TAG-debug.apk"
   - md5sum "$HOME/MoeGallery-$GIT_TAG-release.apk"
   - sha1sum "$HOME/MoeGallery-$GIT_TAG-debug.apk"
