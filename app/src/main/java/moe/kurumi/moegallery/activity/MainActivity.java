@@ -961,8 +961,8 @@ public class MainActivity extends AppCompatActivity
                                 mDataSource.listTag(tags)
                                         .subscribe(new Action1<List<? extends Tag>>() {
                                             @Override
-                                            public void call(List<? extends Tag> tags) {
-                                                listTagDialog(tags);
+                                            public void call(List<? extends Tag> tagList) {
+                                                listTagDialog(tags, tagList);
                                             }
                                         }, new Action1<Throwable>() {
                                             @Override
@@ -977,11 +977,14 @@ public class MainActivity extends AppCompatActivity
         dialog.show();
     }
 
-    public void listTagDialog(final List<? extends Tag> tagList) {
+    public void listTagDialog(String tag, final List<? extends Tag> tagList) {
 
         hideProgressDialog();
 
-        if (tagList.size() == 1) {
+        if (tag.contains("&&") || tag.contains("||")) {
+            clearModes();
+            reload();
+        } else if (tagList.size() == 1) {
             tags = tagList.get(0).getName();
             clearModes();
             reload();
