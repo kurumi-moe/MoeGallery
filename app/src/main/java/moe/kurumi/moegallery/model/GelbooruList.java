@@ -19,7 +19,7 @@ public class GelbooruList {
     @Attribute(name = "count")
     protected Integer count;
     @Attribute(name = "offset")
-    protected Byte offset;
+    protected Integer offset;
 
     public List<GelbooruImage> getPost() {
         if (post == null) {
@@ -28,51 +28,19 @@ public class GelbooruList {
         return this.post;
     }
 
-    /**
-     * Gets the value of the count property.
-     *
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *
-     */
     public Integer getCount() {
         return count;
     }
 
-    /**
-     * Sets the value of the count property.
-     *
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *
-     */
     public void setCount(Integer value) {
         this.count = value;
     }
 
-    /**
-     * Gets the value of the offset property.
-     *
-     * @return
-     *     possible object is
-     *     {@link Byte }
-     *
-     */
-    public Byte getOffset() {
+    public Integer getOffset() {
         return offset;
     }
 
-    /**
-     * Sets the value of the offset property.
-     *
-     * @param value
-     *     allowed object is
-     *     {@link Byte }
-     *
-     */
-    public void setOffset(Byte value) {
+    public void setOffset(Integer value) {
         this.offset = value;
     }
 

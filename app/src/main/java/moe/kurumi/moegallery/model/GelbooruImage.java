@@ -15,9 +15,9 @@ import moe.kurumi.moegallery.utils.Utils;
 public class GelbooruImage implements Image {
 
     @Attribute(name = "height")
-    protected Short height;
+    protected Integer height;
     @Attribute(name = "score")
-    protected Byte score;
+    protected Integer score;
     @Attribute(name = "file_url")
     protected String fileUrl;
     @Attribute(name = "parent_id")
@@ -25,9 +25,9 @@ public class GelbooruImage implements Image {
     @Attribute(name = "sample_url")
     protected String sampleUrl;
     @Attribute(name = "sample_width")
-    protected Short sampleWidth;
+    protected Integer sampleWidth;
     @Attribute(name = "sample_height")
-    protected Short sampleHeight;
+    protected Integer sampleHeight;
     @Attribute(name = "preview_url")
     protected String previewUrl;
     @Attribute(name = "rating")
@@ -37,7 +37,7 @@ public class GelbooruImage implements Image {
     @Attribute(name = "id")
     protected Integer id;
     @Attribute(name = "width")
-    protected Short width;
+    protected Integer width;
     @Attribute(name = "change")
     protected Integer change;
     @Attribute(name = "md5")
@@ -57,56 +57,28 @@ public class GelbooruImage implements Image {
     @Attribute(name = "has_comments")
     protected String hasComments;
     @Attribute(name = "preview_width")
-    protected Short previewWidth;
+    protected Integer previewWidth;
     @Attribute(name = "preview_height")
-    protected Short previewHeight;
+    protected Integer previewHeight;
 
-    /**
-     * Gets the value of the height property.
-     *
-     * @return possible object is
-     * {@link Short }
-     */
+
     public Long getHeight() {
         return (long) height;
     }
 
-    /**
-     * Sets the value of the height property.
-     *
-     * @param value allowed object is
-     * {@link Short }
-     */
-    public void setHeight(Short value) {
+
+    public void setHeight(Integer value) {
         this.height = value;
     }
 
-    /**
-     * Gets the value of the score property.
-     *
-     * @return possible object is
-     * {@link Byte }
-     */
-    public Byte getScore() {
+    public Integer getScore() {
         return score;
     }
 
-    /**
-     * Sets the value of the score property.
-     *
-     * @param value allowed object is
-     * {@link Byte }
-     */
-    public void setScore(Byte value) {
+    public void setScore(Integer value) {
         this.score = value;
     }
 
-    /**
-     * Gets the value of the fileUrl property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getFileUrl() {
         if (fileUrl.startsWith("http")) {
             return fileUrl;
@@ -114,42 +86,18 @@ public class GelbooruImage implements Image {
         return "https:" + fileUrl;
     }
 
-    /**
-     * Sets the value of the fileUrl property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setFileUrl(String value) {
         this.fileUrl = value;
     }
 
-    /**
-     * Gets the value of the parentId property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getParentId() {
         return parentId;
     }
 
-    /**
-     * Sets the value of the parentId property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setParentId(String value) {
         this.parentId = value;
     }
 
-    /**
-     * Gets the value of the sampleUrl property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getSampleUrl() {
         if (sampleUrl.startsWith("http")) {
             return sampleUrl;
@@ -157,12 +105,6 @@ public class GelbooruImage implements Image {
         return "https:" + sampleUrl;
     }
 
-    /**
-     * Sets the value of the sampleUrl property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setSampleUrl(String value) {
         this.sampleUrl = value;
     }
@@ -179,52 +121,22 @@ public class GelbooruImage implements Image {
         return Utils.getProviderName(getPreviewUrl()) + " - " + getId() + " " + tags + ext;
     }
 
-    /**
-     * Gets the value of the sampleWidth property.
-     *
-     * @return possible object is
-     * {@link Short }
-     */
-    public Short getSampleWidth() {
+    public Integer getSampleWidth() {
         return sampleWidth;
     }
 
-    /**
-     * Sets the value of the sampleWidth property.
-     *
-     * @param value allowed object is
-     * {@link Short }
-     */
-    public void setSampleWidth(Short value) {
+    public void setSampleWidth(Integer value) {
         this.sampleWidth = value;
     }
 
-    /**
-     * Gets the value of the sampleHeight property.
-     *
-     * @return possible object is
-     * {@link Short }
-     */
-    public Short getSampleHeight() {
+    public Integer getSampleHeight() {
         return sampleHeight;
     }
 
-    /**
-     * Sets the value of the sampleHeight property.
-     *
-     * @param value allowed object is
-     * {@link Short }
-     */
-    public void setSampleHeight(Short value) {
+    public void setSampleHeight(Integer value) {
         this.sampleHeight = value;
     }
 
-    /**
-     * Gets the value of the previewUrl property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getPreviewUrl() {
         if (previewUrl.startsWith("http")) {
             return previewUrl;
@@ -232,72 +144,30 @@ public class GelbooruImage implements Image {
         return "https:" + previewUrl;
     }
 
-    /**
-     * Sets the value of the previewUrl property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setPreviewUrl(String value) {
         this.previewUrl = value;
     }
 
-    /**
-     * Gets the value of the rating property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getRating() {
         return rating;
     }
 
-    /**
-     * Sets the value of the rating property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setRating(String value) {
         this.rating = value;
     }
 
-    /**
-     * Gets the value of the tags property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getTags() {
         return tags;
     }
 
-    /**
-     * Sets the value of the tags property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setTags(String value) {
         this.tags = value;
     }
 
-    /**
-     * Gets the value of the id property.
-     *
-     * @return possible object is
-     * {@link Integer }
-     */
     public Long getId() {
         return (long) id;
     }
 
-    /**
-     * Sets the value of the id property.
-     *
-     * @param value allowed object is
-     * {@link Integer }
-     */
     public void setId(Integer value) {
         this.id = value;
     }
@@ -327,243 +197,99 @@ public class GelbooruImage implements Image {
         return Utils.tags2List(getTags());
     }
 
-    /**
-     * Gets the value of the width property.
-     *
-     * @return possible object is
-     * {@link Short }
-     */
     public Long getWidth() {
         return (long) width;
     }
 
-    /**
-     * Sets the value of the width property.
-     *
-     * @param value allowed object is
-     * {@link Short }
-     */
-    public void setWidth(Short value) {
+    public void setWidth(Integer value) {
         this.width = value;
     }
 
-    /**
-     * Gets the value of the change property.
-     *
-     * @return possible object is
-     * {@link Integer }
-     */
     public Integer getChange() {
         return change;
     }
 
-    /**
-     * Sets the value of the change property.
-     *
-     * @param value allowed object is
-     * {@link Integer }
-     */
     public void setChange(Integer value) {
         this.change = value;
     }
 
-    /**
-     * Gets the value of the md5 property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getMd5() {
         return md5;
     }
 
-    /**
-     * Sets the value of the md5 property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setMd5(String value) {
         this.md5 = value;
     }
 
-    /**
-     * Gets the value of the creatorId property.
-     *
-     * @return possible object is
-     * {@link Integer }
-     */
     public Integer getCreatorId() {
         return creatorId;
     }
 
-    /**
-     * Sets the value of the creatorId property.
-     *
-     * @param value allowed object is
-     * {@link Integer }
-     */
     public void setCreatorId(Integer value) {
         this.creatorId = value;
     }
 
-    /**
-     * Gets the value of the hasChildren property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getHasChildren() {
         return hasChildren;
     }
 
-    /**
-     * Sets the value of the hasChildren property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setHasChildren(String value) {
         this.hasChildren = value;
     }
 
-    /**
-     * Gets the value of the createdAt property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getCreatedAt() {
         return createdAt;
     }
 
-    /**
-     * Sets the value of the createdAt property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setCreatedAt(String value) {
         this.createdAt = value;
     }
 
-    /**
-     * Gets the value of the status property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getStatus() {
         return status;
     }
 
-    /**
-     * Sets the value of the status property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setStatus(String value) {
         this.status = value;
     }
 
-    /**
-     * Gets the value of the source property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getSource() {
         return source;
     }
 
-    /**
-     * Sets the value of the source property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setSource(String value) {
         this.source = value;
     }
 
-    /**
-     * Gets the value of the hasNotes property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getHasNotes() {
         return hasNotes;
     }
 
-    /**
-     * Sets the value of the hasNotes property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setHasNotes(String value) {
         this.hasNotes = value;
     }
 
-    /**
-     * Gets the value of the hasComments property.
-     *
-     * @return possible object is
-     * {@link String }
-     */
     public String getHasComments() {
         return hasComments;
     }
 
-    /**
-     * Sets the value of the hasComments property.
-     *
-     * @param value allowed object is
-     * {@link String }
-     */
     public void setHasComments(String value) {
         this.hasComments = value;
     }
 
-    /**
-     * Gets the value of the previewWidth property.
-     *
-     * @return possible object is
-     * {@link Short }
-     */
-    public Short getPreviewWidth() {
+    public Integer getPreviewWidth() {
         return previewWidth;
     }
 
-    /**
-     * Sets the value of the previewWidth property.
-     *
-     * @param value allowed object is
-     * {@link Short }
-     */
-    public void setPreviewWidth(Short value) {
+    public void setPreviewWidth(Integer value) {
         this.previewWidth = value;
     }
 
-    /**
-     * Gets the value of the previewHeight property.
-     *
-     * @return possible object is
-     * {@link Short }
-     */
-    public Short getPreviewHeight() {
+    public Integer getPreviewHeight() {
         return previewHeight;
     }
 
-    /**
-     * Sets the value of the previewHeight property.
-     *
-     * @param value allowed object is
-     * {@link Short }
-     */
-    public void setPreviewHeight(Short value) {
+    public void setPreviewHeight(Integer value) {
         this.previewHeight = value;
     }
 
