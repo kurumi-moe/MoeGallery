@@ -177,7 +177,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.ViewHold
             mPosition = position;
             mImage = mImageDataSource.get(position);
 
-            if (Utils.isGif(mImage.getFileUrl())) {
+            if (mImage.getFileUrl() != null && Utils.isGif(mImage.getFileUrl())) {
                 gifTag.setVisibility(VISIBLE);
             } else {
                 gifTag.setVisibility(GONE);

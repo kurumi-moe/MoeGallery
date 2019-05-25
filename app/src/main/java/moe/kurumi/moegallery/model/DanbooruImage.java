@@ -3,10 +3,9 @@ package moe.kurumi.moegallery.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import moe.kurumi.moegallery.data.Providers;
-import moe.kurumi.moegallery.utils.Utils;
-
 import java.util.List;
+
+import moe.kurumi.moegallery.utils.Utils;
 
 /**
  * Created by kurumi on 15-5-30.
@@ -157,9 +156,7 @@ public class DanbooruImage implements Image {
     private String previewFileUrl;
 
     /**
-     *
-     * @return
-     *     The id
+     * @return The id
      */
     public Long getId() {
         return id;
@@ -167,7 +164,7 @@ public class DanbooruImage implements Image {
 
     @Override
     public String getUser() {
-        return ""+getUploaderId();
+        return "" + getUploaderId();
     }
 
     @Override
@@ -177,7 +174,7 @@ public class DanbooruImage implements Image {
 
     @Override
     public Long getCount() {
-        return (long)0;
+        return (long) 0;
     }
 
     @Override
@@ -191,90 +188,70 @@ public class DanbooruImage implements Image {
     }
 
     /**
-     *
-     * @param id
-     *     The id
+     * @param id The id
      */
     public void setId(Long id) {
         this.id = id;
     }
 
     /**
-     *
-     * @return
-     *     The createdAt
+     * @return The createdAt
      */
     public String getCreatedAt() {
         return createdAt;
     }
 
     /**
-     *
-     * @param createdAt
-     *     The created_at
+     * @param createdAt The created_at
      */
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
     /**
-     *
-     * @return
-     *     The uploaderId
+     * @return The uploaderId
      */
     public Long getUploaderId() {
         return uploaderId;
     }
 
     /**
-     *
-     * @param uploaderId
-     *     The uploader_id
+     * @param uploaderId The uploader_id
      */
     public void setUploaderId(Long uploaderId) {
         this.uploaderId = uploaderId;
     }
 
     /**
-     *
-     * @return
-     *     The score
+     * @return The score
      */
     public Long getScore() {
         return score;
     }
 
     /**
-     *
-     * @param score
-     *     The score
+     * @param score The score
      */
     public void setScore(Long score) {
         this.score = score;
     }
 
     /**
-     *
-     * @return
-     *     The source
+     * @return The source
      */
     public String getSource() {
         return source;
     }
 
     /**
-     *
-     * @param source
-     *     The source
+     * @param source The source
      */
     public void setSource(String source) {
         this.source = source;
     }
 
     /**
-     *
-     * @return
-     *     The md5
+     * @return The md5
      */
     public String getMd5() {
         return md5;
@@ -282,7 +259,7 @@ public class DanbooruImage implements Image {
 
     @Override
     public String getSampleUrl() {
-        return Providers.DANBOORU_URI+getLargeFileUrl();
+        return getLargeFileUrl();
     }
 
     @Override
@@ -290,737 +267,576 @@ public class DanbooruImage implements Image {
 
         String tags = tagString;
 
-        if (tags.length()>50) {
+        if (tags.length() > 50) {
             tags = tags.substring(0, 50);
         }
 
-        return Utils.getProviderName(getPreviewUrl())+" - "+getId()+" "+tags+"."+getFileExt();
+        return Utils.getProviderName(getPreviewUrl()) + " - " + getId() + " " + tags + "."
+                + getFileExt();
     }
 
     /**
-     *
-     * @param md5
-     *     The md5
+     * @param md5 The md5
      */
     public void setMd5(String md5) {
         this.md5 = md5;
     }
 
     /**
-     *
-     * @return
-     *     The lastCommentBumpedAt
+     * @return The lastCommentBumpedAt
      */
     public Object getLastCommentBumpedAt() {
         return lastCommentBumpedAt;
     }
 
     /**
-     *
-     * @param lastCommentBumpedAt
-     *     The last_comment_bumped_at
+     * @param lastCommentBumpedAt The last_comment_bumped_at
      */
     public void setLastCommentBumpedAt(Object lastCommentBumpedAt) {
         this.lastCommentBumpedAt = lastCommentBumpedAt;
     }
 
     /**
-     *
-     * @return
-     *     The rating
+     * @return The rating
      */
     public String getRating() {
         return rating;
     }
 
     /**
-     *
-     * @param rating
-     *     The rating
+     * @param rating The rating
      */
     public void setRating(String rating) {
         this.rating = rating;
     }
 
     /**
-     *
-     * @return
-     *     The imageWidth
+     * @return The imageWidth
      */
     public Long getImageWidth() {
         return imageWidth;
     }
 
     /**
-     *
-     * @param imageWidth
-     *     The image_width
+     * @param imageWidth The image_width
      */
     public void setImageWidth(Long imageWidth) {
         this.imageWidth = imageWidth;
     }
 
     /**
-     *
-     * @return
-     *     The imageHeight
+     * @return The imageHeight
      */
     public Long getImageHeight() {
         return imageHeight;
     }
 
     /**
-     *
-     * @param imageHeight
-     *     The image_height
+     * @param imageHeight The image_height
      */
     public void setImageHeight(Long imageHeight) {
         this.imageHeight = imageHeight;
     }
 
     /**
-     *
-     * @return
-     *     The tagString
+     * @return The tagString
      */
     public String getTagString() {
         return tagString;
     }
 
     /**
-     *
-     * @param tagString
-     *     The tag_string
+     * @param tagString The tag_string
      */
     public void setTagString(String tagString) {
         this.tagString = tagString;
     }
 
     /**
-     *
-     * @return
-     *     The isNoteLocked
+     * @return The isNoteLocked
      */
     public Boolean getIsNoteLocked() {
         return isNoteLocked;
     }
 
     /**
-     *
-     * @param isNoteLocked
-     *     The is_note_locked
+     * @param isNoteLocked The is_note_locked
      */
     public void setIsNoteLocked(Boolean isNoteLocked) {
         this.isNoteLocked = isNoteLocked;
     }
 
     /**
-     *
-     * @return
-     *     The favCount
+     * @return The favCount
      */
     public Long getFavCount() {
         return favCount;
     }
 
     /**
-     *
-     * @param favCount
-     *     The fav_count
+     * @param favCount The fav_count
      */
     public void setFavCount(Long favCount) {
         this.favCount = favCount;
     }
 
     /**
-     *
-     * @return
-     *     The fileExt
+     * @return The fileExt
      */
     public String getFileExt() {
-        return fileExt;
+        return fileExt != null ? fileExt : "jpg";
     }
 
     /**
-     *
-     * @param fileExt
-     *     The file_ext
+     * @param fileExt The file_ext
      */
     public void setFileExt(String fileExt) {
         this.fileExt = fileExt;
     }
 
     /**
-     *
-     * @return
-     *     The lastNotedAt
+     * @return The lastNotedAt
      */
     public Object getLastNotedAt() {
         return lastNotedAt;
     }
 
     /**
-     *
-     * @param lastNotedAt
-     *     The last_noted_at
+     * @param lastNotedAt The last_noted_at
      */
     public void setLastNotedAt(Object lastNotedAt) {
         this.lastNotedAt = lastNotedAt;
     }
 
     /**
-     *
-     * @return
-     *     The isRatingLocked
+     * @return The isRatingLocked
      */
     public Boolean getIsRatingLocked() {
         return isRatingLocked;
     }
 
     /**
-     *
-     * @param isRatingLocked
-     *     The is_rating_locked
+     * @param isRatingLocked The is_rating_locked
      */
     public void setIsRatingLocked(Boolean isRatingLocked) {
         this.isRatingLocked = isRatingLocked;
     }
 
     /**
-     *
-     * @return
-     *     The parentId
+     * @return The parentId
      */
     public Object getParentId() {
         return parentId;
     }
 
     /**
-     *
-     * @param parentId
-     *     The parent_id
+     * @param parentId The parent_id
      */
     public void setParentId(Object parentId) {
         this.parentId = parentId;
     }
 
     /**
-     *
-     * @return
-     *     The hasChildren
+     * @return The hasChildren
      */
     public Boolean getHasChildren() {
         return hasChildren;
     }
 
     /**
-     *
-     * @param hasChildren
-     *     The has_children
+     * @param hasChildren The has_children
      */
     public void setHasChildren(Boolean hasChildren) {
         this.hasChildren = hasChildren;
     }
 
     /**
-     *
-     * @return
-     *     The approverId
+     * @return The approverId
      */
     public Object getApproverId() {
         return approverId;
     }
 
     /**
-     *
-     * @param approverId
-     *     The approver_id
+     * @param approverId The approver_id
      */
     public void setApproverId(Object approverId) {
         this.approverId = approverId;
     }
 
     /**
-     *
-     * @return
-     *     The tagCountGeneral
+     * @return The tagCountGeneral
      */
     public Long getTagCountGeneral() {
         return tagCountGeneral;
     }
 
     /**
-     *
-     * @param tagCountGeneral
-     *     The tag_count_general
+     * @param tagCountGeneral The tag_count_general
      */
     public void setTagCountGeneral(Long tagCountGeneral) {
         this.tagCountGeneral = tagCountGeneral;
     }
 
     /**
-     *
-     * @return
-     *     The tagCountArtist
+     * @return The tagCountArtist
      */
     public Long getTagCountArtist() {
         return tagCountArtist;
     }
 
     /**
-     *
-     * @param tagCountArtist
-     *     The tag_count_artist
+     * @param tagCountArtist The tag_count_artist
      */
     public void setTagCountArtist(Long tagCountArtist) {
         this.tagCountArtist = tagCountArtist;
     }
 
     /**
-     *
-     * @return
-     *     The tagCountCharacter
+     * @return The tagCountCharacter
      */
     public Long getTagCountCharacter() {
         return tagCountCharacter;
     }
 
     /**
-     *
-     * @param tagCountCharacter
-     *     The tag_count_character
+     * @param tagCountCharacter The tag_count_character
      */
     public void setTagCountCharacter(Long tagCountCharacter) {
         this.tagCountCharacter = tagCountCharacter;
     }
 
     /**
-     *
-     * @return
-     *     The tagCountCopyright
+     * @return The tagCountCopyright
      */
     public Long getTagCountCopyright() {
         return tagCountCopyright;
     }
 
     /**
-     *
-     * @param tagCountCopyright
-     *     The tag_count_copyright
+     * @param tagCountCopyright The tag_count_copyright
      */
     public void setTagCountCopyright(Long tagCountCopyright) {
         this.tagCountCopyright = tagCountCopyright;
     }
 
     /**
-     *
-     * @return
-     *     The fileSize
+     * @return The fileSize
      */
     public Long getFileSize() {
         return fileSize;
     }
 
     /**
-     *
-     * @param fileSize
-     *     The file_size
+     * @param fileSize The file_size
      */
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;
     }
 
     /**
-     *
-     * @return
-     *     The isStatusLocked
+     * @return The isStatusLocked
      */
     public Boolean getIsStatusLocked() {
         return isStatusLocked;
     }
 
     /**
-     *
-     * @param isStatusLocked
-     *     The is_status_locked
+     * @param isStatusLocked The is_status_locked
      */
     public void setIsStatusLocked(Boolean isStatusLocked) {
         this.isStatusLocked = isStatusLocked;
     }
 
     /**
-     *
-     * @return
-     *     The favString
+     * @return The favString
      */
     public String getFavString() {
         return favString;
     }
 
     /**
-     *
-     * @param favString
-     *     The fav_string
+     * @param favString The fav_string
      */
     public void setFavString(String favString) {
         this.favString = favString;
     }
 
     /**
-     *
-     * @return
-     *     The poolString
+     * @return The poolString
      */
     public String getPoolString() {
         return poolString;
     }
 
     /**
-     *
-     * @param poolString
-     *     The pool_string
+     * @param poolString The pool_string
      */
     public void setPoolString(String poolString) {
         this.poolString = poolString;
     }
 
     /**
-     *
-     * @return
-     *     The upScore
+     * @return The upScore
      */
     public Long getUpScore() {
         return upScore;
     }
 
     /**
-     *
-     * @param upScore
-     *     The up_score
+     * @param upScore The up_score
      */
     public void setUpScore(Long upScore) {
         this.upScore = upScore;
     }
 
     /**
-     *
-     * @return
-     *     The downScore
+     * @return The downScore
      */
     public Long getDownScore() {
         return downScore;
     }
 
     /**
-     *
-     * @param downScore
-     *     The down_score
+     * @param downScore The down_score
      */
     public void setDownScore(Long downScore) {
         this.downScore = downScore;
     }
 
     /**
-     *
-     * @return
-     *     The isPending
+     * @return The isPending
      */
     public Boolean getIsPending() {
         return isPending;
     }
 
     /**
-     *
-     * @param isPending
-     *     The is_pending
+     * @param isPending The is_pending
      */
     public void setIsPending(Boolean isPending) {
         this.isPending = isPending;
     }
 
     /**
-     *
-     * @return
-     *     The isFlagged
+     * @return The isFlagged
      */
     public Boolean getIsFlagged() {
         return isFlagged;
     }
 
     /**
-     *
-     * @param isFlagged
-     *     The is_flagged
+     * @param isFlagged The is_flagged
      */
     public void setIsFlagged(Boolean isFlagged) {
         this.isFlagged = isFlagged;
     }
 
     /**
-     *
-     * @return
-     *     The isDeleted
+     * @return The isDeleted
      */
     public Boolean getIsDeleted() {
         return isDeleted;
     }
 
     /**
-     *
-     * @param isDeleted
-     *     The is_deleted
+     * @param isDeleted The is_deleted
      */
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
 
     /**
-     *
-     * @return
-     *     The tagCount
+     * @return The tagCount
      */
     public Long getTagCount() {
         return tagCount;
     }
 
     /**
-     *
-     * @param tagCount
-     *     The tag_count
+     * @param tagCount The tag_count
      */
     public void setTagCount(Long tagCount) {
         this.tagCount = tagCount;
     }
 
     /**
-     *
-     * @return
-     *     The updatedAt
+     * @return The updatedAt
      */
     public String getUpdatedAt() {
         return updatedAt;
     }
 
     /**
-     *
-     * @param updatedAt
-     *     The updated_at
+     * @param updatedAt The updated_at
      */
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
 
     /**
-     *
-     * @return
-     *     The isBanned
+     * @return The isBanned
      */
     public Boolean getIsBanned() {
         return isBanned;
     }
 
     /**
-     *
-     * @param isBanned
-     *     The is_banned
+     * @param isBanned The is_banned
      */
     public void setIsBanned(Boolean isBanned) {
         this.isBanned = isBanned;
     }
 
     /**
-     *
-     * @return
-     *     The pixivId
+     * @return The pixivId
      */
     public Long getPixivId() {
         return pixivId;
     }
 
     /**
-     *
-     * @param pixivId
-     *     The pixiv_id
+     * @param pixivId The pixiv_id
      */
     public void setPixivId(Long pixivId) {
         this.pixivId = pixivId;
     }
 
     /**
-     *
-     * @return
-     *     The lastCommentedAt
+     * @return The lastCommentedAt
      */
     public Object getLastCommentedAt() {
         return lastCommentedAt;
     }
 
     /**
-     *
-     * @param lastCommentedAt
-     *     The last_commented_at
+     * @param lastCommentedAt The last_commented_at
      */
     public void setLastCommentedAt(Object lastCommentedAt) {
         this.lastCommentedAt = lastCommentedAt;
     }
 
     /**
-     *
-     * @return
-     *     The hasActiveChildren
+     * @return The hasActiveChildren
      */
     public Boolean getHasActiveChildren() {
         return hasActiveChildren;
     }
 
     /**
-     *
-     * @param hasActiveChildren
-     *     The has_active_children
+     * @param hasActiveChildren The has_active_children
      */
     public void setHasActiveChildren(Boolean hasActiveChildren) {
         this.hasActiveChildren = hasActiveChildren;
     }
 
     /**
-     *
-     * @return
-     *     The bitFlags
+     * @return The bitFlags
      */
     public Long getBitFlags() {
         return bitFlags;
     }
 
     /**
-     *
-     * @param bitFlags
-     *     The bit_flags
+     * @param bitFlags The bit_flags
      */
     public void setBitFlags(Long bitFlags) {
         this.bitFlags = bitFlags;
     }
 
     /**
-     *
-     * @return
-     *     The uploaderName
+     * @return The uploaderName
      */
     public String getUploaderName() {
         return uploaderName;
     }
 
     /**
-     *
-     * @param uploaderName
-     *     The uploader_name
+     * @param uploaderName The uploader_name
      */
     public void setUploaderName(String uploaderName) {
         this.uploaderName = uploaderName;
     }
 
     /**
-     *
-     * @return
-     *     The hasLarge
+     * @return The hasLarge
      */
     public Boolean getHasLarge() {
         return hasLarge;
     }
 
     /**
-     *
-     * @param hasLarge
-     *     The has_large
+     * @param hasLarge The has_large
      */
     public void setHasLarge(Boolean hasLarge) {
         this.hasLarge = hasLarge;
     }
 
     /**
-     *
-     * @return
-     *     The tagStringArtist
+     * @return The tagStringArtist
      */
     public String getTagStringArtist() {
         return tagStringArtist;
     }
 
     /**
-     *
-     * @param tagStringArtist
-     *     The tag_string_artist
+     * @param tagStringArtist The tag_string_artist
      */
     public void setTagStringArtist(String tagStringArtist) {
         this.tagStringArtist = tagStringArtist;
     }
 
     /**
-     *
-     * @return
-     *     The tagStringCharacter
+     * @return The tagStringCharacter
      */
     public String getTagStringCharacter() {
         return tagStringCharacter;
     }
 
     /**
-     *
-     * @param tagStringCharacter
-     *     The tag_string_character
+     * @param tagStringCharacter The tag_string_character
      */
     public void setTagStringCharacter(String tagStringCharacter) {
         this.tagStringCharacter = tagStringCharacter;
     }
 
     /**
-     *
-     * @return
-     *     The tagStringCopyright
+     * @return The tagStringCopyright
      */
     public String getTagStringCopyright() {
         return tagStringCopyright;
     }
 
     /**
-     *
-     * @param tagStringCopyright
-     *     The tag_string_copyright
+     * @param tagStringCopyright The tag_string_copyright
      */
     public void setTagStringCopyright(String tagStringCopyright) {
         this.tagStringCopyright = tagStringCopyright;
     }
 
     /**
-     *
-     * @return
-     *     The tagStringGeneral
+     * @return The tagStringGeneral
      */
     public String getTagStringGeneral() {
         return tagStringGeneral;
     }
 
     /**
-     *
-     * @param tagStringGeneral
-     *     The tag_string_general
+     * @param tagStringGeneral The tag_string_general
      */
     public void setTagStringGeneral(String tagStringGeneral) {
         this.tagStringGeneral = tagStringGeneral;
     }
 
     /**
-     *
-     * @return
-     *     The hasVisibleChildren
+     * @return The hasVisibleChildren
      */
     public Boolean getHasVisibleChildren() {
         return hasVisibleChildren;
     }
 
     /**
-     *
-     * @param hasVisibleChildren
-     *     The has_visible_children
+     * @param hasVisibleChildren The has_visible_children
      */
     public void setHasVisibleChildren(Boolean hasVisibleChildren) {
         this.hasVisibleChildren = hasVisibleChildren;
@@ -1028,7 +844,7 @@ public class DanbooruImage implements Image {
 
     @Override
     public String getPreviewUrl() {
-        return Providers.DANBOORU_URI+getPreviewFileUrl();
+        return getPreviewFileUrl();
     }
 
     @Override
@@ -1042,55 +858,43 @@ public class DanbooruImage implements Image {
     }
 
     /**
-     *
-     * @return
-     *     The fileUrl
+     * @return The fileUrl
      */
     @Override
     public String getFileUrl() {
-        return Providers.DANBOORU_URI+fileUrl;
+        return fileUrl != null ? fileUrl : getSource();
     }
 
     /**
-     *
-     * @param fileUrl
-     *     The file_url
+     * @param fileUrl The file_url
      */
     public void setFileUrl(String fileUrl) {
         this.fileUrl = fileUrl;
     }
 
     /**
-     *
-     * @return
-     *     The largeFileUrl
+     * @return The largeFileUrl
      */
     public String getLargeFileUrl() {
         return largeFileUrl;
     }
 
     /**
-     *
-     * @param largeFileUrl
-     *     The large_file_url
+     * @param largeFileUrl The large_file_url
      */
     public void setLargeFileUrl(String largeFileUrl) {
         this.largeFileUrl = largeFileUrl;
     }
 
     /**
-     *
-     * @return
-     *     The previewFileUrl
+     * @return The previewFileUrl
      */
     public String getPreviewFileUrl() {
-        return previewFileUrl;
+        return previewFileUrl != null ? previewFileUrl : getSource();
     }
 
     /**
-     *
-     * @param previewFileUrl
-     *     The preview_file_url
+     * @param previewFileUrl The preview_file_url
      */
     public void setPreviewFileUrl(String previewFileUrl) {
         this.previewFileUrl = previewFileUrl;
