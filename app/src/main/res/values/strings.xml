@@ -73,6 +73,7 @@
     <string name="new_version_available">New version available, update now?</string>
     <string name="anime_pictures_server_key" translatable="false">anime_pictures_server</string>
     <string name="anime_pictures_token_key" translatable="false">anime_pictures_token</string>
+    <string name="anime_pictures_token_expire_date" translatable="false">anime_pictures_token_expire_date</string>
     <string name="last_update_key" translatable="false">last_update</string>
     <string name="auto_rotate_key" translatable="false">auto_rotate_key</string>
     <string name="auto_rotate_summary">Auto rotate screen by image size</string>
@@ -82,4 +83,5 @@
     <string name="project_title">Open source project</string>
     <string name="feedback_url" translatable="false">https://github.com/kurumi-moe/MoeGallery/issues</string>
     <string name="feedback_title">Feedback</string>
+    <string name="login_text">" Sign in to see more pictures"</string>
 </resources>

@@ -26,6 +26,10 @@ public class SettingImpl implements Setting {
         return SingletonHelper.INSTANCE;
     }
 
+    private long getLong(int key, int def) {
+        return mPrefs.getLong(sContext.getString(key), def);
+    }
+
     private String getString(int key, int def) {
         return mPrefs.getString(sContext.getString(key), sContext.getString(def));
     }
@@ -66,6 +70,18 @@ public class SettingImpl implements Setting {
     public void setAnimePicturesToken(String token) {
         mPrefs.edit()
                 .putString(sContext.getString(R.string.anime_pictures_token_key), token)
+                .apply();
+    }
+
+    @Override
+    public long animePicturesExpireDate() {
+        return getLong(R.string.anime_pictures_token_expire_date, 0);
+    }
+
+    @Override
+    public void setAnimePicturesExpireDate(long time) {
+        mPrefs.edit()
+                .putLong(sContext.getString(R.string.anime_pictures_token_expire_date), time)
                 .apply();
     }
 

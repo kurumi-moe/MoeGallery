@@ -53,4 +53,5 @@
     <string name="download_complete">已保存</string>
     <string name="project_title">开放源代码项目</string>
     <string name="feedback_title">反馈</string>
+    <string name="login_text">登录后查看更多图片</string>
 </resources>

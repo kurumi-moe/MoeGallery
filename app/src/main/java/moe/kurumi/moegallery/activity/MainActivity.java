@@ -18,6 +18,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -62,9 +64,12 @@ import com.raizlabs.android.dbflow.sql.language.Select;
 import org.apmem.tools.layouts.FlowLayout;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.inject.Inject;
@@ -1100,15 +1105,21 @@ public class MainActivity extends AppCompatActivity
                                     if (user.getSuccess()) {
                                         makeToast(R.string.login_success);
                                         mSetting.setAnimePicturesToken(user.getToken());
+                                        mSetting.setAnimePicturesExpireDate(
+                                                System.currentTimeMillis()
+                                                        + 3600 * 24 * 360 * 1000L);
                                     } else {
                                         makeToast(R.string.login_failed);
                                         mSetting.setAnimePicturesToken("");
                                     }
 
                                     Headers headers = response.headers();
-                                    if (!headers.get("_server").isEmpty()) {
-                                        String server = headers.get("_server");
-                                        mSetting.setAnimePicturesServer(server);
+
+                                    for (String cookie : headers.values("set-cookie")) {
+                                        if (cookie.contains("_server")) {
+                                            processAnimeCookie(cookie);
+                                            break;
+                                        }
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -1127,6 +1138,25 @@ public class MainActivity extends AppCompatActivity
                 // do nothing
         }
         hideProgressDialog();
+    }
+
+    private void processAnimeCookie(String cookie) throws Exception {
+        String[] values = cookie.split(";");
+        String server = values[0].split("=")[0];
+        mSetting.setAnimePicturesServer(server);
+
+        String expired = values[1].split("=")[1];
+
+        Log.d(TAG, "server: " + server + "," + "expired:"
+                + expired);
+
+        SimpleDateFormat sdf = new SimpleDateFormat(
+                "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        Date mDate = sdf.parse(expired);
+        long date = mDate.getTime();
+
+        mSetting.setAnimePicturesExpireDate(date);
+        Log.d(TAG, "expired date: " + date);
     }
 
     @UiThread
@@ -1719,6 +1749,8 @@ public class MainActivity extends AppCompatActivity
         viewPager.setAdapter(mPagerAdapter);
 
         hideProgressDialog();
+
+        showLoginSnakeBar();
     }
 
     @Override
@@ -1731,16 +1763,6 @@ public class MainActivity extends AppCompatActivity
     public void onItemClick(View view, int position) {
 
         final Image image = mDataSource.get(position);
-
-        if (image instanceof AnimePicturesList.AnimePicturesPreview) {
-            if (((AnimePicturesList.AnimePicturesPreview) image).getErotics() > 1) {
-                if (mSetting.animePicturesToken().isEmpty()) {
-                    // need login
-                    login();
-                    return;
-                }
-            }
-        }
 
         if (floatSearch.isShow()) {
             floatSearch.hide();
@@ -1781,6 +1803,30 @@ public class MainActivity extends AppCompatActivity
                 case WRITE_STORAGE:
                     mSetting.setAutoDownload(false);
                     break;
+            }
+        }
+    }
+
+    private void showLoginSnakeBar() {
+
+        if (mDataSource.getCount() == 0) {
+            return;
+        }
+
+        final Image image = mDataSource.get(0);
+
+        if (image instanceof AnimePicturesList.AnimePicturesPreview) {
+            if (mSetting.animePicturesToken().isEmpty()
+                    || mSetting.animePicturesExpireDate() < System.currentTimeMillis()) {
+
+                Snackbar snackbar = Snackbar.make(recyclerView, R.string.login_text, 5000);
+                snackbar.setAction(android.R.string.ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        login();
+                    }
+                });
+                snackbar.show();
             }
         }
     }

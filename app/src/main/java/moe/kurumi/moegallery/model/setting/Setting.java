@@ -14,6 +14,10 @@ public interface Setting {
 
     void setAnimePicturesToken(String token);
 
+    long animePicturesExpireDate();
+
+    void setAnimePicturesExpireDate(long time);
+
     boolean autoDownload();
 
     void setAutoDownload(boolean enable);
